@@ -45,29 +45,7 @@ npm run build
 
 本项目采用 [CaelLab BY-SA Code License](https://www.caellab.com/license/bysa-code) 授权。
 
-```
-CaelLab BY-SA Code License
-Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this work (the "Work"), to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Work, for personal, commercial, or
-non-commercial purposes, subject to the following conditions:
-
-1. Source Availability: If you distribute the Work, or any derivative work
-   based on the Work, you must make the complete corresponding source code
-   available under the terms of this same license.
-
-2. License Preservation: The above copyright notice and this permission notice
-   shall be included in all copies or substantial portions of the Work.
-
-3. ShareAlike: Any distributed derivative work must be licensed under the
-   CaelLab BY-SA Code License.
-
-THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-```
+具体可查看 [LICENSE](https://github.com/yunyun-3782/GoodPlanCraftLaunCher/blob/main/LICENSE) 。
 
 ---
 
