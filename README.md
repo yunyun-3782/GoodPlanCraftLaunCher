@@ -2,6 +2,11 @@
 
 简洁高效的 Minecraft 启动器。
 
+代码优先挂
+[https://source.caellab.com/yunyun/GoodPlanCraftLaunCher](https://source.caellab.com/yunyun/GoodPlanCraftLaunCher)
+这个可能很久都没更新了
+
+
 ## 制作方法
 
 使用[Electron](https://www.electronjs.org/zh/docs/latest/)进行制作。
