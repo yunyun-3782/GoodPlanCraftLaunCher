@@ -24,6 +24,9 @@ git clone https://github.com/yunyun-3782/GoodPlanCraftLaunCher.git
 ```cmd
 cd 项目根文件夹
 
+#初始化项目 node_modules
+npm install
+
 #启动 GPCL
 npm run start
 
