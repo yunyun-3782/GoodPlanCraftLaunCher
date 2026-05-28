@@ -3,7 +3,9 @@
 简洁高效的 Minecraft 启动器。
 
 代码优先挂
-[[https://source.caellab.com/yunyun/GoodPlanCraftLaunCher]([https://git.caellab.com/yunyun/GoodPlanCraftLaunCher](https://git.caellab.com/yunyun/GoodPlanCraftLaunCher))](https://source.caellab.com/yunyun/GoodPlanCraftLaunCher)
+
+https://git.caellab.com/yunyun/GoodPlanCraftLaunCher
+
 这个可能很久都没更新了
 
 
