@@ -2546,41 +2546,6 @@ async function detectGameWindow(pid) {
   writeLog(`[启动] 开始检测游戏窗口，PID: ${pid}`);
 
   return new Promise((resolve) => {
-<<<<<<< Updated upstream
-    // 设置超时（最多等待5秒，比原来快3秒）
-    const timeout = setTimeout(() => {
-      writeLog(`[启动] 游戏窗口检测超时，继续启动流程`);
-      if (mainWindow) {
-        mainWindow.webContents.send('game-window-created', { pid: pid, timeout: true });
-      }
-      resolve();
-    }, 5000);
-    
-    // 使用更快速的检测方式
-    let checkCount = 0;
-    const maxChecks = 50; // 最多检查50次（5秒）
-    let detected = false;
-    
-    // 首先立即发送一次，不等待检测完成
-    writeLog(`[启动] 快速发送创建事件（立即检测）`);
-    setTimeout(() => {
-      if (!detected) {
-        detected = true;
-        if (mainWindow) {
-          mainWindow.webContents.send('game-window-created', { pid: pid, fast: true });
-        }
-      }
-    }, 1500); // 1.5秒后直接认为启动成功
-    
-    const checkInterval = setInterval(() => {
-      checkCount++;
-      
-      if (detected) {
-        clearInterval(checkInterval);
-        clearTimeout(timeout);
-        resolve();
-        return;
-=======
     let resolved = false;
     const done = () => {
       if (resolved) return;
@@ -2603,7 +2568,6 @@ async function detectGameWindow(pid) {
       try { detector.kill(); } catch {}
       if (mainWindow && !launchCancelFlag) {
         mainWindow.webContents.send('game-window-created', { pid, timeout: true });
->>>>>>> Stashed changes
       }
       done();
     }, 8000);
@@ -3345,64 +3309,4 @@ function generateLaunchDisplayName(versionId) {
   return parts.join(' ');
 }
 
-// 安装 Forge
-async function installForge(mcVersion, forgeVersionId) {
-  writeLog(`[Forge] 安装: ${forgeVersionId}`);
-  
-  const versionDir = path.join(GAME_DIR, 'versions', mcVersion);
-  if (!fs.existsSync(versionDir)) {
-    throw new Error(`原版版本 ${mcVersion} 不存在`);
-  }
-  
-  // 创建 gpcl 目录
-  const gpclDir = path.join(versionDir, 'gpcl');
-  if (!fs.existsSync(gpclDir)) fs.mkdirSync(gpclDir, { recursive: true });
-  
-  // 读取或创建 config.ini
-  const configPath = path.join(gpclDir, 'config.ini');
-  let config = readVersionConfig(mcVersion) || {
-    Minecraft: mcVersion,
-    Forge: '',
-    Fabric: '',
-    OptiFine: ''
-  };
-  config.Minecraft = mcVersion;
-  config.Forge = forgeVersionId;
-  
-  // 写入 config.ini
-  const configContent = `[Version]
-Minecraft=${config.Minecraft}
-Forge=${config.Forge}
-Fabric=${config.Fabric || ''}
-OptiFine=${config.OptiFine || ''}
-`;
-  fs.writeFileSync(configPath, configContent, 'utf8');
-  
-  // 更新 version.json
-  const jsonPath = path.join(versionDir, `${mcVersion}.json`);
-  const versionData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-  versionData.mainClass = 'net.minecraftforge.userdev.LaunchTesting';
-  
-  versionData.libraries = versionData.libraries || [];
-  const hasForgeLib = versionData.libraries.some(lib => 
-    lib.name && lib.name.startsWith('net.minecraftforge:forge:')
-  );
-  if (!hasForgeLib) {
-    versionData.libraries.push({
-      name: `net.minecraftforge:forge:${forgeVersionId}`,
-      downloads: {
-        artifact: {
-          url: `https://maven.minecraftforge.net/net/minecraftforge/forge/${forgeVersionId}/forge-${forgeVersionId}.jar`,
-          path: `net/minecraftforge/forge/${forgeVersionId}/forge-${forgeVersionId}.jar`,
-          sha1: '',
-          size: 0
-        }
-      }
-    });
-  }
-  
-  fs.writeFileSync(jsonPath, JSON.stringify(versionData, null, 2));
-  
-  writeLog(`[Forge] 安装完成: ${mcVersion} + Forge ${forgeVersionId}`);
-  return mcVersion;
-}
+
