@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+out/
+.env
+.env.local
+.DS_Store
+*.log
+start.bat
+push.bat
+GoodPlanCraftLauncher/

@@ -1,0 +1,68 @@
+﻿{
+  "name": "gpcl",
+  "version": "1.4.1",
+  "description": "GoodPlanCraftLauncher",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "clean": "if (Test-Path build) { Remove-Item -Recurse -Force build }",
+    "copy-files": "node scripts/copy.js",
+    "copy-static": "node -e \"const p=require('./package.json');console.log(JSON.stringify({name:p.name,version:p.version,main:p.main,type:p.type}))\" > build/app/package.json",
+    "obfuscate": "javascript-obfuscator build/app --config obfuscator.json --exclude node_modules",
+    "build": "npm run copy-files && npm run obfuscate && npm run copy-static && electron-builder --publish=never",
+    "start:dev": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^42.1.0",
+    "electron-builder": "^26.8.1",
+    "javascript-obfuscator": "^5.4.3"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "unzip-stream": "^0.3.4"
+  },
+  "build": {
+    "appId": "com.caellab.gamets.gpcl",
+    "productName": "GoodPlanCraftLauncher",
+    "icon": "gpcl-icon.ico",
+    "directories": {
+      "app": "build/app",
+      "output": "dist"
+    },
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GoodPlanCraftLauncher",
+      "artifactName": "GPCL-${version}-Setup.${ext}",
+      "deleteAppDataOnUninstall": false
+    },
+    "files": [
+      "**/*",
+      "!.minecraft/**"
+    ],
+    "asarUnpack": [
+      "node_modules/adm-zip/**/*",
+      "node_modules/unzip-stream/**/*"
+    ]
+  }
+}

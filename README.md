@@ -1,29 +1,22 @@
-# GoodPlanCraftLaunCher (GPCL)
+﻿# GoodPlanCraftLauncher (GPCL)
 
 简洁高效的 Minecraft 启动器。
 
-代码优先挂
-
-https://git.caellab.com/yunyun/GoodPlanCraftLaunCher
-
-这个可能很久都没更新了
-
-
 ## 制作方法
 
-使用[Electron](https://www.electronjs.org/zh/docs/latest/)进行制作。
+使用 [Node.js](https://nodejs.org) + [Electron](https://www.electronjs.org/zh/docs/latest/) 进行制作。
 
 ## 安装
 
 ### 从源码构建
 
 ```bash
-git clone https://github.com/yunyun-3782/GoodPlanCraftLaunCher.git
+git clone https://git.caellab.com/yunyun/GoodPlanCraftLauncher.git
 ```
 
 ### 预编译版本
 
-前往 [Releases](https://github.com/yunyun-3782/GoodPlanCraftLaunCher/releases/) 下载对可执行文件。
+前往 [Releases](https://git.caellab.com/yunyun/GoodPlanCraftLauncher/releases) 下载对可执行文件。
 
 ## 使用
 
@@ -49,14 +42,17 @@ npm run build
 
 ## 贡献
 
-欢迎提交 不同意见，同时欢迎开发 衍生 版本。
+欢迎提交 [不同意见](https://f.caellab.com/t/problem) 或 [Issue](https://git.caellab.com/yunyun/GoodPlanCraftLauncher/issues) ，同时欢迎开发 衍生 版本。
 
 ## 许可证
 
 本项目采用 [CaelLab BY-SA Code License](https://www.caellab.com/license/bysa-code) 授权。
 
-具体可查看 [LICENSE](https://github.com/yunyun-3782/GoodPlanCraftLaunCher/blob/main/LICENSE) 。
+具体可查看 [LICENSE](https://git.caellab.com/yunyun/GoodPlanCraftLauncher/src/branch/main/LICENSE) 。
+
+---
+很高兴能帮助到你！祝你在MC中玩的愉快！
 
 ---
 
-**GoodPlanCraftLaunCher** — 让 Minecraft 启动更简单。
+**GoodPlanCraftLauncher** — 让 Minecraft 启动更简单。

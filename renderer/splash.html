@@ -1,0 +1,187 @@
+﻿<!-- 
+  CaelLab BY-SA Code License 
+  Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS 
+  Source: https://git.caellab.com/yunyun/GoodPlanCraftLauncher 
+  Source: https://github.com/yunyun-3782/GoodPlanCraftLauncher 
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPCL - Loading</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0d0d15 0%, #1a1a2e 50%, #0d0d15 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .splash-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      padding: 40px;
+    }
+
+    .logo {
+      width: 120px;
+      height: 120px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(79, 195, 247, 0.2), rgba(41, 182, 246, 0.1));
+      padding: 12px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      border-radius: 18px;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 60px rgba(79, 195, 247, 0.5);
+      }
+    }
+
+    .brand-name {
+      font-size: 24px;
+      font-weight: 600;
+      color: #a0aec0;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .brand-name .highlight {
+      color: #4fc3f7;
+      font-weight: 700;
+    }
+
+    .version-info {
+      font-size: 12px;
+      color: #5f6d85;
+      margin-top: 10px;
+    }
+
+    .copyright {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #5f6d85;
+      text-align: center;
+    }
+
+    .particle-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(79, 195, 247, 0.5);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(20px);
+        opacity: 0;
+      }
+    }
+
+    .fade-out {
+      animation: fadeOut 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="particle-container" id="particles"></div>
+
+  <div class="splash-container" id="splash-content">
+    <div class="logo">
+      <img src="logo.png" alt="GPCL Logo">
+    </div>
+    <div class="brand-name">
+      <span class="highlight">G</span>ood <span class="highlight">P</span>lan <span class="highlight">C</span>raft <span class="highlight">L</span>auncher
+    </div>
+    <div class="version-info" id="version-info">v1.1.0</div>
+  </div>
+
+  <script>
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 25; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.bottom = '-10px';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    createParticles();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.gpcl && window.gpcl.getAppVersion) {
+        window.gpcl.getAppVersion().then(version => {
+          document.getElementById('version-info').textContent = 'v' + version;
+        });
+      }
+
+      setTimeout(() => {
+        const splashContent = document.getElementById('splash-content');
+        splashContent.classList.add('fade-out');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 500);
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
