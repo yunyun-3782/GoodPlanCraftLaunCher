@@ -404,9 +404,8 @@ app.whenReady().then(() => {
     return;
   }
 
-  // 提前初始化 BASE_DIR 和日志路径，确保所有 writeLog 都写入文件
+  // 提前初始化 BASE_DIR 以读取配置文件
   BASE_DIR = app.getPath('userData');
-  initPaths();
 
   // 检查是否启用防止多次启动
   let preventMultipleLaunch = true;
@@ -432,6 +431,8 @@ app.whenReady().then(() => {
     }
   }
 
+  initPaths();
+  
   cleanupExpiredLogs();
   
   try {
