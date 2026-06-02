@@ -1,4 +1,4 @@
-﻿<!-- 
+<!-- 
   CaelLab BY-SA Code License 
   Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS 
   
@@ -168,19 +168,33 @@
     createParticles();
 
     window.addEventListener('DOMContentLoaded', () => {
-      if (window.gpcl && window.gpcl.getAppVersion) {
-        window.gpcl.getAppVersion().then(version => {
-          document.getElementById('version-info').textContent = 'v' + version;
-        });
-      }
+      const checkSkipSplash = async () => {
+        try {
+          if (window.gpcl && window.gpcl.getSettings) {
+            const settings = await window.gpcl.getSettings();
+            if (settings && settings.appearance && settings.appearance.skipSplash === true) {
+              window.location.href = 'index.html';
+              return;
+            }
+          }
+        } catch (e) {}
 
-      setTimeout(() => {
-        const splashContent = document.getElementById('splash-content');
-        splashContent.classList.add('fade-out');
+        if (window.gpcl && window.gpcl.getAppVersion) {
+          window.gpcl.getAppVersion().then(version => {
+            document.getElementById('version-info').textContent = 'v' + version;
+          });
+        }
+
         setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 500);
-      }, 2000);
+          const splashContent = document.getElementById('splash-content');
+          splashContent.classList.add('fade-out');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 500);
+        }, 2000);
+      };
+
+      checkSkipSplash();
     });
   </script>
 </body>

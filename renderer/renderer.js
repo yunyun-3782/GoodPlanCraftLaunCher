@@ -866,7 +866,12 @@ async function reloadAllSettingsToUI() {
 
   const playStartupAnimationEl = document.getElementById('play-startup-animation');
   if (playStartupAnimationEl) {
-    playStartupAnimationEl.checked = settings.advanced?.playStartupAnimation === true;
+    playStartupAnimationEl.checked = settings.appearance?.playStartupAnimation === true;
+  }
+
+  const skipSplashEl = document.getElementById('skip-splash');
+  if (skipSplashEl) {
+    skipSplashEl.checked = settings.appearance?.skipSplash === true;
   }
 
   const developerModeEl = document.getElementById('developer-mode');
@@ -1723,12 +1728,12 @@ async function launchGame() {
     let windowMode = settings.game?.windowMode || 'windowed';
     let welcomeAnimPlaying = false;
     
-    if (settings.advanced?.playStartupAnimation && window.gpcl && window.gpcl.playStartupAnimation) {
+    if (settings.appearance?.playStartupAnimation && window.gpcl && window.gpcl.playStartupAnimation) {
       setStatus('[启动动画] 正在播放欢迎动画...');
       welcomeAnimPlaying = true;
       windowMode = 'fullscreen';
       
-      settings.advanced.playStartupAnimation = false;
+      settings.appearance.playStartupAnimation = false;
       await gpcl.saveSettings(settings);
       const playStartupEl = document.getElementById('play-startup-animation');
       if (playStartupEl) playStartupEl.checked = false;
@@ -2582,12 +2587,28 @@ launchBtn.addEventListener('click', launchGame);
   if (playStartupAnimation) {
     (async () => {
       const settings = await loadSettings();
-      playStartupAnimation.checked = settings.advanced?.playStartupAnimation === true;
+      playStartupAnimation.checked = settings.appearance?.playStartupAnimation === true;
     })();
 
     playStartupAnimation.addEventListener('change', async () => {
       const settings = await loadSettings();
-      settings.advanced.playStartupAnimation = playStartupAnimation.checked;
+      if (!settings.appearance) settings.appearance = {};
+      settings.appearance.playStartupAnimation = playStartupAnimation.checked;
+      await gpcl.saveSettings(settings);
+    });
+  }
+
+  const skipSplash = document.getElementById('skip-splash');
+  if (skipSplash) {
+    (async () => {
+      const settings = await loadSettings();
+      skipSplash.checked = settings.appearance?.skipSplash === true;
+    })();
+
+    skipSplash.addEventListener('change', async () => {
+      const settings = await loadSettings();
+      if (!settings.appearance) settings.appearance = {};
+      settings.appearance.skipSplash = skipSplash.checked;
       await gpcl.saveSettings(settings);
     });
   }
@@ -2707,6 +2728,18 @@ launchBtn.addEventListener('click', launchGame);
     const scale = settings.appearance?.scale || '100';
     setCustomSelectValue('settings-scale', scale);
     applyScale(scale);
+    
+    // 播放启动动画
+    const playStartupAnimSync = document.getElementById('play-startup-animation');
+    if (playStartupAnimSync) {
+      playStartupAnimSync.checked = settings.appearance?.playStartupAnimation === true;
+    }
+    
+    // 不渲染Splash
+    const skipSplashSync = document.getElementById('skip-splash');
+    if (skipSplashSync) {
+      skipSplashSync.checked = settings.appearance?.skipSplash === true;
+    }
     
     // Java镜像
     const javaMirror = settings.download?.javaMirror || 'tsinghua';
@@ -3172,7 +3205,9 @@ async function loadSettings() {
       },
       appearance: {
         theme: 'light',
-        scale: '100'
+        scale: '100',
+        playStartupAnimation: true,
+        skipSplash: false
       },
       download: {
         maxConcurrent: 64,
@@ -3185,7 +3220,6 @@ async function loadSettings() {
         autoClearLogs: true,
         logRetentionValue: 7,
         logRetentionUnit: 'day',
-        playStartupAnimation: true,
         developerMode: false
       }
     };
