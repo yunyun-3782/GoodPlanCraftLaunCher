@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * CaelLab BY-SA Code License 
  * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS 
 
@@ -2424,10 +2424,7 @@ launchBtn.addEventListener('click', launchGame);
         checkUpdateBtn.classList.add('new-version');
         
         if (updateStatus) {
-          updateStatus.innerHTML = `
-            <div class="update-log-title">发现 ${allNewerVersions.length} 个新版本！</div>
-            ${renderUpdateVersionCards(allNewerVersions)}
-          `;
+          updateStatus.innerHTML = `<div class="update-log-title">发现 ${allNewerVersions.length} 个新版本！</div>${renderUpdateVersionCards(allNewerVersions)}`;
           updateStatus.classList.add('show', 'has-update');
         }
         
@@ -3055,22 +3052,12 @@ function renderUpdateVersionCards(newerVersions) {
 
   const cards = newerVersions.map((v, index) => {
     const isNewest = index === newerVersions.length - 1;
-    const titleHtml = v.title
-      ? `<div class="update-card-title">${v.title}</div>`
-      : '';
-    const logHtml = v.log
-      ? `<div class="update-card-log">${v.log}</div>`
-      : '';
-    return `
-      <div class="update-version-card ${isNewest ? 'newest' : ''}">
-        <div class="update-card-header">
-          <span class="update-card-version">${v.version}</span>
-          ${isNewest ? '<span class="update-card-badge">最新</span>' : ''}
-        </div>
-        ${titleHtml}
-        ${logHtml}
-      </div>
-    `;
+    const titleHtml = v.title ? `<div class="update-card-title">${v.title}</div>` : '';
+    const logHtml = v.log ? `<div class="update-card-log">${v.log}</div>` : '';
+    return `<div class="update-version-card ${isNewest ? 'newest' : ''}">` +
+      `<div class="update-card-header"><span class="update-card-version">${v.version}</span>` +
+      `${isNewest ? '<span class="update-card-badge">最新</span>' : ''}</div>` +
+      `${titleHtml}${logHtml}</div>`;
   }).reverse().join('');
 
   return `<div class="update-versions-list">${cards}</div>`;
@@ -3101,7 +3088,7 @@ async function checkForUpdates(silent = false) {
     
     allNewerVersions = parsedVersions
       .filter(v => compareVersions(currentVersion, v.version) > 0)
-      .sort((a, b) => compareVersions(a.version, b.version));
+      .sort((a, b) => compareVersions(b.version, a.version));
     
     updateAvailable = allNewerVersions.length > 0;
     

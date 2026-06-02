@@ -655,9 +655,82 @@ ipcMain.handle('cancel-close', () => {
 
 // 取消启动游戏
 let launchCancelFlag = false;
-ipcMain.handle('cancel-launch', () => {
+let currentGameProcess = null;
+let currentGamePid = null;
+
+function killGameProcessTree(pid) {
+  try {
+    const result = spawnSync('taskkill', ['/pid', String(pid), '/T', '/F'], { windowsHide: true, timeout: 5000 });
+    if (result.status === 0) {
+      writeLog(`[启动] 已终止进程树 PID: ${pid}`);
+      return true;
+    }
+    writeLog(`[启动] taskkill PID ${pid} 返回: ${result.status}, ${result.stderr?.toString().trim()}`);
+  } catch (e) {
+    writeLog(`[启动] taskkill 失败: ${e.message}`);
+  }
+  return false;
+}
+
+function findAndKillMinecraftJavaProcesses() {
+  try {
+    const script = `
+      $javaProcs = Get-Process -Name "java","javaw" -ErrorAction SilentlyContinue
+      if ($javaProcs) {
+        foreach ($p in $javaProcs) {
+          try {
+            $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId=$($p.Id)" -ErrorAction SilentlyContinue).CommandLine
+            if ($cmdLine -and ($cmdLine -like '*net.minecraft*' -or $cmdLine -like '*minecraft*' -or $cmdLine -like '*forge*' -or $cmdLine -like '*fabric*' -or $cmdLine -like '*optifine*')) {
+              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+              Write-Output "KILLED:$($p.Id)"
+            }
+          } catch {}
+        }
+      }
+    `;
+    const result = spawnSync('powershell', ['-NoProfile', '-Command', script], { windowsHide: true, timeout: 8000, encoding: 'utf8' });
+    const output = (result.stdout || '').trim();
+    if (output) {
+      const pids = output.split('\n').filter(l => l.startsWith('KILLED:')).map(l => l.replace('KILLED:', ''));
+      writeLog(`[启动] 通过命令行匹配杀死了 ${pids.length} 个Minecraft Java进程: ${pids.join(', ')}`);
+      return pids.length > 0;
+    }
+  } catch (e) {
+    writeLog(`[启动] 查找Minecraft进程失败: ${e.message}`);
+  }
+  return false;
+}
+
+ipcMain.handle('cancel-launch', async () => {
   launchCancelFlag = true;
   writeLog('[启动] 用户取消启动');
+
+  let killed = false;
+
+  if (currentGameProcess) {
+    try {
+      const pid = currentGameProcess.pid;
+      if (pid) {
+        writeLog(`[启动] 尝试终止游戏进程 PID: ${pid}`);
+        killed = killGameProcessTree(pid);
+        try { currentGameProcess.kill(); } catch {}
+      }
+    } catch (e) {
+      writeLog(`[启动] 终止游戏进程异常: ${e.message}`);
+    }
+    currentGameProcess = null;
+    currentGamePid = null;
+  }
+
+  if (!killed) {
+    writeLog('[启动] 未找到已保存的游戏进程，尝试通过命令行匹配查找Minecraft Java进程');
+    findAndKillMinecraftJavaProcesses();
+  }
+
+  if (mainWindow) {
+    mainWindow.webContents.send('game-closed', -1);
+  }
+
   return { success: true };
 });
 
@@ -670,6 +743,7 @@ ipcMain.handle('check-for-updates', async () => {
     
     https.get(url, (res) => {
       let data = '';
+      res.setEncoding('utf8');
       
       res.on('data', (chunk) => {
         data += chunk;
@@ -694,16 +768,7 @@ ipcMain.handle('check-for-updates', async () => {
 
 // 获取当前版本号（从package.json读取）
 ipcMain.handle('get-app-version', () => {
-  try {
-    const packagePath = path.join(__dirname, 'package.json');
-    if (fs.existsSync(packagePath)) {
-      const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-      return pkg.version || '1.0.0';
-    }
-  } catch (e) {
-    writeLog('[版本] 读取package.json失败: ' + e.message);
-  }
-  return '1.0.0';
+  return APP_VERSION || app.getVersion() || '1.0.0';
 });
 
 // 打开外部链接
@@ -2492,8 +2557,27 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
       }
     }
 
+    currentGameProcess = proc;
+    currentGamePid = proc.pid;
+
+    // 如果已经被取消，立即杀死
+    if (launchCancelFlag) {
+      writeLog('[启动] 进程已启动但取消标志已设置，立即终止');
+      killGameProcessTree(proc.pid);
+      try { proc.kill(); } catch {}
+      currentGameProcess = null;
+      currentGamePid = null;
+      return { success: false, error: '启动已取消', cancelled: true };
+    }
+
     // 检测游戏窗口创建成功
     await detectGameWindow(proc.pid);
+
+    // 检测结束后再次检查取消标志（可能在窗口检测期间被取消）
+    if (launchCancelFlag) {
+      writeLog('[启动] 窗口检测结束后检测到取消标志');
+      return { success: false, error: '启动已取消', cancelled: true };
+    }
 
     // 捕获输出用于调试
     let stdoutData = '';
@@ -2501,9 +2585,10 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
     proc.stdout?.on('data', d => {
       const text = d.toString();
       stdoutData += text;
-      mainWindow.webContents.send('game-log', text);
-      
-      // 检测Minecraft窗口创建成功的标志
+      if (mainWindow) {
+        mainWindow.webContents.send('game-log', text);
+      }
+
       if (text.includes('LWJGL Version') || text.includes('OpenGL version') || text.includes('Window')) {
         writeLog(`[启动] 检测到窗口初始化日志`);
         if (mainWindow) {
@@ -2514,9 +2599,10 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
     proc.stderr?.on('data', d => {
       const text = d.toString();
       stderrData += text;
-      mainWindow.webContents.send('game-log', text);
-      
-      // 检测Minecraft窗口创建成功的标志
+      if (mainWindow) {
+        mainWindow.webContents.send('game-log', text);
+      }
+
       if (text.includes('LWJGL Version') || text.includes('OpenGL version') || text.includes('Window')) {
         writeLog(`[启动] 检测到窗口初始化日志`);
         if (mainWindow) {
@@ -2531,6 +2617,13 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
       writeLog(`[启动] 进程退出，代码: ${code}`);
       if (code !== 0 && stderrData) {
         writeLog(`[启动] 错误输出: ${stderrData.slice(0, 1000)}`);
+      }
+      if (currentGamePid === proc.pid) {
+        currentGameProcess = null;
+        currentGamePid = null;
+      }
+      if (mainWindow) {
+        mainWindow.webContents.send('game-closed', code);
       }
     });
 
@@ -2555,9 +2648,15 @@ async function detectGameWindow(pid) {
 
     const cancelCheck = setInterval(() => {
       if (launchCancelFlag) {
-        writeLog(`[启动] 窗口检测期间检测到取消标志，立即退出`);
+        writeLog(`[启动] 窗口检测期间检测到取消标志，立即终止游戏进程并退出`);
         clearInterval(cancelCheck);
         try { detector.kill(); } catch {}
+        killGameProcessTree(pid);
+        try {
+          if (currentGameProcess) { currentGameProcess.kill(); }
+        } catch {}
+        currentGameProcess = null;
+        currentGamePid = null;
         done();
       }
     }, 100);
