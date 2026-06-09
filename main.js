@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * CaelLab BY-SA Code License 
  * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS 
 
@@ -43,7 +43,6 @@ function checkDebuggerAttached() {
   } catch (e) {}
   return false;
 }
-
 
 let isDeveloperMode = false;
 
@@ -217,7 +216,6 @@ function cleanupExpiredLogs() {
     const retentionValue = settings.advanced?.logRetentionValue || 7;
     const retentionUnit = settings.advanced?.logRetentionUnit || 'day';
 
-    // 计算过期时间
     const now = Date.now();
     let expireTime;
     
@@ -290,11 +288,11 @@ function writeLog(message) {
 let isDownloading = false;
 let currentDownloadVersion = null;
 let shouldCancelDownload = false;
-let currentDownloadType = null; // 'game' or 'java'
-let currentDownloadPath = null; // 下载的文件或文件夹路径
-let javaDownloadResolve = null; // Java下载对话框的Promise resolve
-let javaDownloadReject = null; // Java下载对话框的Promise reject
-let isJavaDownloading = false; // Java下载中标志
+let currentDownloadType = null; 
+let currentDownloadPath = null; 
+let javaDownloadResolve = null; 
+let javaDownloadReject = null; 
+let isJavaDownloading = false; 
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -316,17 +314,36 @@ function createWindow() {
     }
   });
 
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    try {
+      shell.openExternal(details.url);
+      writeLog(`[外部链接] 通过 window.open 拦截并打开: ${details.url}`);
+    } catch (e) {
+      writeLog(`[外部链接] 打开失败: ${e.message}`);
+    }
+    return { action: 'deny' };
+  });
+
+  mainWindow.webContents.on('new-window', (event, url, frameName, disposition, options) => {
+    event.preventDefault();
+    try {
+      shell.openExternal(url);
+      writeLog(`[外部链接] 通过 new-window 拦截并打开: ${url}`);
+    } catch (e) {
+      writeLog(`[外部链接] 打开失败: ${e.message}`);
+    }
+  });
+
   try { Menu.setApplicationMenu(null); } catch (e) {}
   mainWindow.setMenuBarVisibility(false);
   mainWindow.setAutoHideMenuBar(true);
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'splash.html'));
 
-  // 关闭窗口前拦截
   mainWindow.on('close', (event) => {
     if (isDownloading || isJavaDownloading) {
       event.preventDefault();
-      // 发送询问到渲染进程
+      
       mainWindow.webContents.send('confirm-close-while-downloading');
     }
   });
@@ -356,10 +373,29 @@ app.on('web-contents-created', (event, contents) => {
       if ((ctrlOrCmd && key === 'r') || input.key === 'F5') event.preventDefault();
       if ((input.control && input.shift && key === 'i') || input.key === 'F12' || (input.meta && input.alt && key === 'i')) event.preventDefault();
     });
+
+    contents.setWindowOpenHandler((details) => {
+      try {
+        shell.openExternal(details.url);
+        writeLog(`[外部链接] 通过 window.open 拦截并打开: ${details.url}`);
+      } catch (e) {
+        writeLog(`[外部链接] 打开失败: ${e.message}`);
+      }
+      return { action: 'deny' };
+    });
+
+    contents.on('new-window', (event, url, frameName, disposition, options) => {
+      event.preventDefault();
+      try {
+        shell.openExternal(url);
+        writeLog(`[外部链接] 通过 new-window 拦截并打开: ${url}`);
+      } catch (e) {
+        writeLog(`[外部链接] 打开失败: ${e.message}`);
+      }
+    });
   } catch (e) {}
 });
 
-// 单实例锁：当检测到第二个实例时，凸显已有窗口
 app.on('second-instance', () => {
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();
@@ -392,7 +428,7 @@ function createGPCLShortcut() {
 }
 
 app.whenReady().then(() => {
-  // 检测是否是 electron-builder 的测试运行
+  
   const isTesting = process.argv.includes('--squirrel-install') || 
                     process.argv.includes('--squirrel-obsolete') ||
                     process.argv.includes('--squirrel-updated') ||
@@ -404,10 +440,8 @@ app.whenReady().then(() => {
     return;
   }
 
-  // 提前初始化 BASE_DIR 以读取配置文件
   BASE_DIR = app.getPath('userData');
 
-  // 检查是否启用防止多次启动
   let preventMultipleLaunch = true;
   try {
     const configPath = path.join(BASE_DIR, 'gpcl', 'config', 'setting.ini');
@@ -470,7 +504,6 @@ ipcMain.handle('show-message-dialog', async (_, options) => {
   return { success: true, response: result.response };
 });
 
-// Java版本 → 官方runtime目录名映射
 const JAVA_RUNTIME_MAP = {
   "8": "jre-legacy",
   "16": "java-runtime-beta",
@@ -479,7 +512,6 @@ const JAVA_RUNTIME_MAP = {
   "25": "java-runtime-epsilon"
 };
 
-// Java版本 → 下载URL的key映射
 const JAVA_DOWNLOAD_KEYS = {
   "8": "jre-legacy",
   "17": "java-runtime-gamma",
@@ -487,19 +519,16 @@ const JAVA_DOWNLOAD_KEYS = {
   "25": "java-runtime-epsilon"
 };
 
-// 可选择的Java版本列表
 const JAVA_VERSIONS_AVAILABLE = ["8", "17", "21", "25"];
 
-// 获取Java运行时目录（官方目录结构，使用绝对路径）
 function getJavaRuntimeDir(javaVersion) {
   const runtimeName = JAVA_RUNTIME_MAP[javaVersion] || `jre${javaVersion}`;
-  // 使用官方Minecraft运行时目录：C:\Users\用户名\AppData\Roaming\.minecraft\runtime
+  
   return path.join(os.homedir(), 'AppData', 'Roaming', '.minecraft', 'runtime', runtimeName);
 }
 
-// 在目录中查找java.exe（自动拼接\bin\，使用java.exe以便捕获错误输出）
 function findJavaExecutable(runtimeDir) {
-  // 优先使用 bin\java.exe（可以捕获控制台输出用于调试）
+  
   const javaPath = path.join(runtimeDir, 'bin', 'java.exe');
   if (fs.existsSync(javaPath)) {
     try {
@@ -509,11 +538,10 @@ function findJavaExecutable(runtimeDir) {
       return null;
     }
   }
-  // 兜底：递归查找
+  
   return findJavaExecutableInDir(runtimeDir);
 }
 
-// 检查指定版本的Java是否已安装
 async function checkJavaInstalled(javaVersion) {
   const runtimeDir = getJavaRuntimeDir(javaVersion);
   if (fs.existsSync(runtimeDir)) {
@@ -525,42 +553,38 @@ async function checkJavaInstalled(javaVersion) {
   return { installed: false, javaPath: null };
 }
 
-// 获取指定Minecraft版本所需的Java版本
 function getJavaVersionForMCVersion(versionId) {
-  // Minecraft 1.16及以下: Java 8
-  // Minecraft 1.17: Java 16
-  // Minecraft 1.18-1.20: Java 17
-  // Minecraft 1.21+: Java 21
+
+  
+  
   const parts = versionId.split('.');
   let major = parseInt(parts[0], 10);
   let minor = parseInt(parts[1], 10);
-  // 如果版本号是 "26" 这种没有点的格式
+  
   if (isNaN(major)) major = 1;
-  // 处理像 "26" 这种格式（没有 minor）
+  
   if (isNaN(minor)) {
-    // 26 及以上使用 Java 25
+    
     if (major >= 26) return '25';
-    // 21-25 使用 Java 21
+    
     if (major >= 21) return '21';
-    // 否则默认 Java 17
+    
     return '17';
   }
-  // 处理 1.x.x 的旧版本
+  
   if (major === 1) {
     if (minor < 17) return '8';
     if (minor === 17) return '16';
     if (minor <= 20) return '17';
     return '21';
   }
-  // 处理 2.x.x 和更大的版本（21, 24, 26, ...）
-  // 26 及以上使用 Java 25
+
   if (major >= 26) return '25';
-  // 21-25 使用 Java 21
+  
   if (major >= 21) return '21';
   return '17';
 }
 
-// 获取版本数据中指定的Java版本
 function getJavaVersionFromVersionData(versionData) {
   if (versionData?.javaVersion?.majorVersion) {
     return String(versionData.javaVersion.majorVersion);
@@ -572,7 +596,6 @@ function getJavaVersionFromVersionData(versionData) {
   return getJavaVersionForMCVersion(versionData.id);
 }
 
-// 查找本地Java运行时（只查找，不下载）
 async function ensureJavaRuntime(version) {
   const javaVersion = typeof version === 'string' ? version : String(version);
   const runtimeDir = getJavaRuntimeDir(javaVersion);
@@ -591,29 +614,25 @@ async function ensureJavaRuntime(version) {
   return null;
 }
 
-// 完整的Java运行时保证（包括下载和安装）
 async function ensureJavaRuntimeWithInstall(version, mainWindow) {
   const javaVersion = typeof version === 'string' ? version : String(version);
-  
-  // 先检查是否已安装
+
   const installed = await checkJavaInstalled(javaVersion);
   if (installed.installed && installed.javaPath) {
     writeLog(`[Java] Java ${javaVersion} 已安装: ${installed.javaPath}`);
     return { success: true, javaPath: installed.javaPath };
   }
-  
-  // 如果未安装，触发下载流程
+
   writeLog(`[Java] Java ${javaVersion} 未安装，开始下载流程`);
   return null;
 }
 
-// 用户确认关闭并清理
 ipcMain.handle('confirm-close-download', async () => {
   if (isDownloading && currentDownloadVersion) {
     shouldCancelDownload = true;
     
     try {
-      // 清理游戏版本下载
+      
       const versionDir = currentDownloadPath || path.join(GAME_DIR, 'versions', currentDownloadVersion);
       const cancelFilePath = path.join(versionDir, 'CancelDownload.txt');
       const cancelContent = `GoodPlanCraftLauncher ${APP_VERSION}\n取消时间：${formatTimestamp()}\n\n正确的关闭\n您在下载完成前正确地关闭了GPCL。`;
@@ -649,12 +668,10 @@ ipcMain.handle('confirm-close-download', async () => {
   return { success: true };
 });
 
-// 取消关闭
 ipcMain.handle('cancel-close', () => {
   return { success: true };
 });
 
-// 取消启动游戏
 let launchCancelFlag = false;
 let currentGameProcess = null;
 let currentGamePid = null;
@@ -735,7 +752,6 @@ ipcMain.handle('cancel-launch', async () => {
   return { success: true };
 });
 
-// 检查更新（使用Node.js网络请求避免CORS问题）
 const https = require('https');
 ipcMain.handle('check-for-updates', async () => {
   return new Promise((resolve) => {
@@ -767,12 +783,10 @@ ipcMain.handle('check-for-updates', async () => {
   });
 });
 
-// 获取当前版本号（从package.json读取）
 ipcMain.handle('get-app-version', () => {
   return APP_VERSION || app.getVersion() || '1.0.0';
 });
 
-// 打开外部链接
 ipcMain.handle('open-external', (_, url) => {
   try {
     shell.openExternal(url);
@@ -783,7 +797,6 @@ ipcMain.handle('open-external', (_, url) => {
   }
 });
 
-// IPC: 卸载Java运行时
 ipcMain.handle('uninstall-java', async (_, javaVersion) => {
   try {
     const runtimeDir = getJavaRuntimeDir(javaVersion);
@@ -807,7 +820,6 @@ ipcMain.handle('uninstall-java', async (_, javaVersion) => {
   }
 });
 
-// 获取Java镜像源设置
 ipcMain.handle('get-java-mirror-settings', () => {
   try {
     const settingsPath = path.join(GAME_DIR, 'settings', 'java_mirror.json');
@@ -826,7 +838,6 @@ ipcMain.handle('get-java-mirror-settings', () => {
   }
 });
 
-// 获取Java版本对应的下载URL
 ipcMain.handle('get-java-download-url', async (_, javaVersion) => {
   try {
     const settingsPath = path.join(GAME_DIR, 'settings', 'java_mirror.json');
@@ -838,8 +849,7 @@ ipcMain.handle('get-java-download-url', async (_, javaVersion) => {
     if (fs.existsSync(settingsPath)) {
       settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
     }
-    
-    // 根据镜像源生成URL
+
     const url = getJavaDownloadUrl(javaVersion, settings.mirror, settings.customUrl);
     writeLog(`[Java] 获取下载URL: Java ${javaVersion} - ${url}`);
     return { success: true, url };
@@ -849,30 +859,25 @@ ipcMain.handle('get-java-download-url', async (_, javaVersion) => {
   }
 });
 
-// 根据镜像源生成下载URL
 function getJavaDownloadUrl(javaVersion, mirror, customUrl) {
-  // 清华大学镜像
+  
   const tsinghuaMirrors = {
     "8": "https://mirrors.tuna.tsinghua.edu.cn/Adoptium/8/jre/x64/windows/OpenJDK8U-jre_x64_windows_hotspot_8u492b09.zip",
     "17": "https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jre/x64/windows/OpenJDK17U-jre_x64_windows_hotspot_17.0.19_10.zip",
     "21": "https://mirrors.tuna.tsinghua.edu.cn/Adoptium/21/jre/x64/windows/OpenJDK21U-jre_x64_windows_hotspot_21.0.11_10.zip",
     "25": "https://mirrors.tuna.tsinghua.edu.cn/Adoptium/25/jre/x64/windows/OpenJDK25U-jre_x64_windows_hotspot_25.0.3_9.zip"
   };
-  
-  // 如果使用清华大学镜像
+
   if (mirror === 'tsinghua') {
     return tsinghuaMirrors[javaVersion] || tsinghuaMirrors["17"];
   }
-  
-  // 如果使用自定义镜像
+
   if (mirror === 'custom' && customUrl) {
-    // 替换{v}变量
+    
     let url = customUrl;
-    
-    // Java版本号（8, 17, 21等）
+
     url = url.replace(/\{v\}/gi, javaVersion);
-    
-    // 完整版本号的映射
+
     const versionMap = {
       "8": "8u492b09",
       "17": "17.0.19_10",
@@ -883,12 +888,10 @@ function getJavaDownloadUrl(javaVersion, mirror, customUrl) {
     
     return url;
   }
-  
-  // 默认使用清华大学镜像
+
   return tsinghuaMirrors[javaVersion] || tsinghuaMirrors["17"];
 }
 
-// 保存Java镜像源设置
 function saveJavaMirrorSettings(mirror, customUrl) {
   try {
     const settingsDir = path.join(GAME_DIR, 'settings');
@@ -908,19 +911,15 @@ function saveJavaMirrorSettings(mirror, customUrl) {
   }
 }
 
-// 取消下载（只清理文件，不关闭窗口）
 ipcMain.handle('cancel-download-only', async () => {
   writeLog('[取消下载] 开始取消下载流程');
-  
-  // 设置取消标志
+
   shouldCancelDownload = true;
-  
-  // 清空下载队列
+
   const pendingCount = downloadQueue.length;
   downloadQueue = [];
   writeLog(`[取消下载] 已清空 ${pendingCount} 个待处理下载任务`);
-  
-  // 等待当前活跃的下载完成（最多等待2秒）
+
   const waitStart = Date.now();
   while (activeDownloads > 0 && (Date.now() - waitStart) < 2000) {
     await new Promise(r => setTimeout(r, 100));
@@ -930,7 +929,7 @@ ipcMain.handle('cancel-download-only', async () => {
   if ((isDownloading && currentDownloadVersion) || isJavaDownloading) {
     try {
       if (currentDownloadType === 'game' && currentDownloadPath) {
-        // 清理游戏版本下载
+        
         const versionDir = currentDownloadPath;
         if (fs.existsSync(versionDir)) {
           const files = fs.readdirSync(versionDir);
@@ -949,7 +948,7 @@ ipcMain.handle('cancel-download-only', async () => {
         }
         writeLog(`[取消下载] 已清理游戏版本下载目录: ${versionDir}`);
       } else if (currentDownloadType === 'java' && currentDownloadPath) {
-        // 清理Java下载
+        
         const javaFile = currentDownloadPath;
         if (fs.existsSync(javaFile)) {
           try {
@@ -964,8 +963,7 @@ ipcMain.handle('cancel-download-only', async () => {
       console.error('清理下载失败:', e);
       writeLog(`清理下载失败: ${e.message}`);
     }
-    
-    // 重置所有下载状态
+
     isDownloading = false;
     isJavaDownloading = false;
     currentDownloadVersion = null;
@@ -975,8 +973,7 @@ ipcMain.handle('cancel-download-only', async () => {
     totalDownloadFiles = 0;
     completedDownloadFiles = 0;
   }
-  
-  // 通知渲染进程下载已取消
+
   for (const w of BrowserWindow.getAllWindows()) {
     w.webContents.send('download-cancelled');
   }
@@ -985,12 +982,10 @@ ipcMain.handle('cancel-download-only', async () => {
   return { success: true };
 });
 
-// 显示Java版本选择对话框
 ipcMain.handle('show-java-install-dialog', async (_, options) => {
   try {
     const { mcVersion, recommendedJava } = options;
-    
-    // 构建版本选择列表，按推荐程度排序
+
     const versionPriority = {
       [recommendedJava]: 0,
       "17": 1,
@@ -1006,8 +1001,7 @@ ipcMain.handle('show-java-install-dialog', async (_, options) => {
     const result = await new Promise((resolve, reject) => {
       javaDownloadResolve = resolve;
       javaDownloadReject = reject;
-      
-      // 发送消息给渲染进程显示对话框
+
       if (mainWindow) {
         mainWindow.webContents.send('show-java-install-dialog', {
           mcVersion,
@@ -1026,7 +1020,6 @@ ipcMain.handle('show-java-install-dialog', async (_, options) => {
   }
 });
 
-// 用户在对话框中选择Java版本
 ipcMain.handle('select-java-version', async (_, data) => {
   const { selectedVersion, cancelled } = data;
   
@@ -1049,14 +1042,13 @@ ipcMain.handle('select-java-version', async (_, data) => {
   return { success: false, cancelled: true };
 });
 
-// 下载并安装Java运行时
 async function downloadAndInstallJava(javaVersion) {
   const runtimeDir = getJavaRuntimeDir(javaVersion);
   
   writeLog(`[Java] 开始安装 Java ${javaVersion} 运行时`);
   
   try {
-    // 检查是否已存在
+    
     if (fs.existsSync(runtimeDir)) {
       const exe = findJavaExecutable(runtimeDir);
       if (exe) {
@@ -1064,8 +1056,7 @@ async function downloadAndInstallJava(javaVersion) {
         return { success: true, javaPath: exe };
       }
     }
-    
-    // 获取Java运行时的下载URL（支持自定义镜像源）
+
     const settingsPath = path.join(GAME_DIR, 'settings', 'java_mirror.json');
     let settings = { mirror: 'tsinghua', customUrl: '' };
     
@@ -1077,15 +1068,13 @@ async function downloadAndInstallJava(javaVersion) {
     
     const downloadUrl = getJavaDownloadUrl(javaVersion, settings.mirror, settings.customUrl);
     writeLog(`[Java] 使用镜像源: ${settings.mirror}, URL: ${downloadUrl}`);
-    
-    // 使用Electron webContents下载（更可靠）
+
     const result = await downloadJavaWithWebContents(javaVersion, downloadUrl);
     return result;
     
   } catch (e) {
     writeLog(`[Java] Java ${javaVersion} 安装失败: ${e.message}`);
-    
-    // 清理失败的安装
+
     if (fs.existsSync(runtimeDir)) {
       try {
         fs.rmSync(runtimeDir, { recursive: true, force: true });
@@ -1096,7 +1085,6 @@ async function downloadAndInstallJava(javaVersion) {
   }
 }
 
-// 使用Electron webContents下载Java（推荐方法）
 async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
   const runtimeName = JAVA_RUNTIME_MAP[javaVersion];
   const runtimeDir = getJavaRuntimeDir(javaVersion);
@@ -1109,7 +1097,6 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
 
   writeLog(`[Java] 使用Electron下载 Java ${javaVersion}: ${downloadUrl}`);
 
-  // 设置下载路径，以便取消时能正确删除
   currentDownloadVersion = `java-${javaVersion}`;
   currentDownloadType = 'java';
   currentDownloadPath = tempFile;
@@ -1127,18 +1114,15 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
       return;
     }
 
-    // 使用webContents.downloadURL
     win.webContents.downloadURL(downloadUrl, true);
 
-    // 监听下载开始
     win.webContents.session.once('will-download', (event, item) => {
-      // 设置下载路径
+      
       item.setSavePath(tempFile);
       
       const totalBytes = item.getTotalBytes();
       writeLog(`[Java] 开始下载，总大小: ${totalBytes} bytes`);
 
-      // 监听进度
       item.on('updated', (event, state) => {
         if (state === 'progressing') {
           const received = item.getReceivedBytes();
@@ -1161,7 +1145,6 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
         }
       });
 
-      // 监听完成
       item.on('done', (event, state) => {
         if (state === 'cancelled') {
           isJavaDownloading = false;
@@ -1183,8 +1166,7 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
 
         if (state === 'completed') {
           writeLog(`[Java] 下载完成，开始解压...`);
-          
-          // 验证文件
+
           const fileStats = fs.statSync(tempFile);
           const fileSize = fileStats.size;
           
@@ -1192,8 +1174,7 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
             reject(new Error(`下载失败：文件太小 (${fileSize} bytes)`));
             return;
           }
-          
-          // 检查ZIP头
+
           const header = Buffer.alloc(4);
           const fd = fs.openSync(tempFile, 'r');
           fs.readSync(fd, header, 0, 4, 0);
@@ -1205,8 +1186,7 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
           }
           
           writeLog(`[Java] 文件验证通过，大小: ${fileSize} bytes`);
-          
-          // 解压
+
           const parentDir = path.dirname(runtimeDir);
           if (!fs.existsSync(parentDir)) {
             fs.mkdirSync(parentDir, { recursive: true });
@@ -1225,8 +1205,7 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
             reject(new Error(`解压失败: ${zipError.message}`));
             return;
           }
-          
-          // 重命名目录
+
           const entries = fs.readdirSync(parentDir);
           let extractedDir = null;
           for (const entry of entries) {
@@ -1250,13 +1229,11 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
             fs.renameSync(extractedDir, runtimeDir);
             writeLog(`[Java] 已重命名为: ${runtimeName}`);
           }
-          
-          // 清理临时文件
+
           try {
             fs.unlinkSync(tempFile);
           } catch (e) {}
-          
-          // 验证安装
+
           const javaPath = findJavaExecutable(runtimeDir);
           if (!javaPath) {
             reject(new Error('Java运行时安装失败，未找到java.exe'));
@@ -1279,7 +1256,6 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
       });
     });
 
-    // 超时处理（10分钟）
     setTimeout(() => {
       if (isJavaDownloading) {
         writeLog(`[Java] 下载超时`);
@@ -1301,7 +1277,6 @@ async function downloadJavaWithWebContents(javaVersion, downloadUrl) {
   });
 }
 
-// 从Minecraft元数据获取Java运行时的下载信息
 async function getJavaRuntimeDownloadInfo(javaVersion) {
   try {
     const runtimeKey = JAVA_DOWNLOAD_KEYS[javaVersion];
@@ -1311,8 +1286,7 @@ async function getJavaRuntimeDownloadInfo(javaVersion) {
     }
     
     writeLog(`[Java] 正在查找 Java ${javaVersion} (${runtimeKey}) 的下载信息...`);
-    
-    // 使用清华大学开源软件镜像站（TUNA）的Adoptium镜像
+
     const runtimeInfo = {
       "8": {
         id: "jre-legacy",
@@ -1357,33 +1331,27 @@ async function getJavaRuntimeDownloadInfo(javaVersion) {
   }
 }
 
-// 获取MC版本推荐的Java版本
 function getRecommendedJavaVersion(mcVersion) {
-  // Minecraft 1.16.5及以下: Java 8
-  // Minecraft 1.17: Java 16/17
-  // Minecraft 1.18-1.20.4: Java 17
-  // Minecraft 1.20.5+: Java 21
-  // Minecraft 1.21+: Java 21/25
-  // Minecraft 26+: Java 21
+
+  
+
+  
 
   const parts = mcVersion.split('.');
   let major = parseInt(parts[0], 10);
   let minor = parseInt(parts[1], 10);
   let patch = parts.length > 2 ? parseInt(parts[2], 10) : 0;
 
-  // 如果版本号是 "26" 这种没有点的格式
   if (isNaN(major)) major = 1;
 
-  // 处理像 "26" 这种格式（只有 major 没有 minor）
   if (isNaN(minor)) {
-    // 26 及以上使用 Java 25
+    
     if (major >= 26) return '25';
-    // 21-25 使用 Java 21
+    
     if (major >= 21) return '21';
     return '17';
   }
 
-  // 处理 1.x.x 的旧版本
   if (major === 1) {
     if (minor < 17) return '8';
     if (minor === 17) return '17';
@@ -1394,10 +1362,9 @@ function getRecommendedJavaVersion(mcVersion) {
     return '17';
   }
 
-  // 处理 2.x.x 和更大的版本（21, 24, 26, ...）
-  // 26 及以上使用 Java 25
+  
   if (major >= 26) return '25';
-  // 21-25 使用 Java 21
+  
   if (major >= 21) return '21';
   return '17';
 }
@@ -1493,14 +1460,13 @@ async function processDownloadQueue() {
         processDownloadQueue();
       });
   }
-  
-  // 如果取消下载，拒绝队列中所有剩余任务
+
   if (shouldCancelDownload) {
     while (downloadQueue.length > 0) {
       const task = downloadQueue.shift();
       task.reject(new Error('下载已取消'));
     }
-    // 通知渲染进程下载已取消
+    
     for (const w of BrowserWindow.getAllWindows()) {
       w.webContents.send('download-cancelled');
     }
@@ -1530,7 +1496,6 @@ async function downloadFileInternal(url, dest, label) {
     const dir = path.dirname(dest);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-    // 确保使用二进制模式写入
     const file = fs.createWriteStream(dest, { encoding: null });
     let loaded = 0;
     let total = 0;
@@ -1547,18 +1512,17 @@ async function downloadFileInternal(url, dest, label) {
         };
         
         const req2 = https.get(url, options, res2 => {
-          // 处理重定向
+          
           if (res2.statusCode >= 300 && res2.statusCode < 400 && res2.headers.location) {
             writeLog(`[下载] ${label} 重定向到: ${res2.headers.location}`);
             file.close();
-            // 递归处理重定向
+            
             downloadFileInternal(res2.headers.location, dest, label).then(resolve).catch(reject);
             return;
           }
           
           total = parseInt(res2.headers['content-length'] || '0', 10);
-          
-          // 检查内容类型
+
           const contentType = res2.headers['content-type'] || '';
           if (!contentType.includes('zip') && !contentType.includes('octet-stream')) {
             writeLog(`[下载] ${label} 警告: 内容类型是 ${contentType}，可能不是ZIP文件`);
@@ -1610,25 +1574,22 @@ async function downloadFileInternal(url, dest, label) {
     try {
       const req = net.request(url);
       const to = setTimeout(() => { try { req.abort(); } catch {} ; fallbackToHttps('timeout'); }, 60000);
-      
-      // 设置User-Agent头
+
       req.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
 
       req.on('response', res => {
         clearTimeout(to);
-        
-        // 处理重定向
+
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           writeLog(`[下载] ${label} 重定向到: ${res.headers.location}`);
           file.close();
-          // 递归处理重定向
+          
           downloadFileInternal(res.headers.location, dest, label).then(resolve).catch(reject);
           return;
         }
         
         total = parseInt(res.headers['content-length'] || '0', 10);
-        
-        // 检查内容类型
+
         const contentType = res.headers['content-type'] || '';
         if (!contentType.includes('zip') && !contentType.includes('octet-stream')) {
           writeLog(`[下载] ${label} 警告: 内容类型是 ${contentType}，可能不是ZIP文件`);
@@ -1680,7 +1641,6 @@ async function downloadFileInternal(url, dest, label) {
   });
 }
 
-// 带超时的下载包装器，超时后会抛出错误让调用方尝试下一个源
 async function downloadFileInternalWithTimeout(url, dest, label, timeoutMs) {
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -1717,7 +1677,6 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
     try { fs.unlinkSync(cancelFilePath); } catch (e) {}
   }
 
-  // 重置取消标志
   shouldCancelDownload = false;
   isDownloading = true;
   currentDownloadVersion = versionId;
@@ -1738,12 +1697,10 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
     const versionJsonPath = path.join(versionDir, versionId + '.json');
     const versionJarPath = path.join(versionDir, versionId + '.jar');
 
-    // 获取版本清单
     const manifest = JSON.parse(await fetchText('https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'));
     const vInfo = manifest.versions.find(v => v.id === versionId);
     if (!vInfo) throw new Error('版本不存在: ' + versionId);
 
-    // 下载版本JSON
     if (!fs.existsSync(versionJsonPath)) {
       const vData = await fetchText(vInfo.url);
       fs.writeFileSync(versionJsonPath, vData);
@@ -1751,30 +1708,25 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
 
     const versionData = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
 
-    // 下载客户端JAR
     if (!fs.existsSync(versionJarPath)) {
       await downloadFile(versionData.downloads.client.url, versionJarPath, '客户端');
     }
-    
-    // 检查是否取消
+
     if (shouldCancelDownload) {
       writeLog(`下载取消：${versionId}`);
       throw new Error('下载已取消');
     }
 
-    // 下载资源索引
     const assetIndexPath = path.join(GAME_DIR, 'assets', 'indexes', versionData.assetIndex.id + '.json');
     if (!fs.existsSync(assetIndexPath)) {
       await downloadFile(versionData.assetIndex.url, assetIndexPath, '资源索引');
     }
-    
-    // 检查是否取消
+
     if (shouldCancelDownload) {
       writeLog(`下载取消：${versionId}`);
       throw new Error('下载已取消');
     }
 
-    // 等待资源索引下载完成并读取
     let assetIndexData;
     for (let i = 0; i < 10; i++) {
       try {
@@ -1786,24 +1738,21 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
     }
     if (!assetIndexData) throw new Error('无法读取资源索引');
 
-    // 收集所有需要下载的文件
     const toDownload = [];
 
-    // 资源文件
     for (const [name, obj] of Object.entries(assetIndexData.objects)) {
       const hash = obj.hash;
       const prefix = hash.substring(0, 2);
       const assetPath = path.join(GAME_DIR, 'assets', 'objects', prefix, hash);
       if (!fs.existsSync(assetPath)) {
         toDownload.push({
-          url: `https://resources.download.minecraft.net/${prefix}/${hash}`,
+          url: `https:
           dest: assetPath,
           label: `资源: ${name}`
         });
       }
     }
 
-    // 库文件
     for (const lib of versionData.libraries) {
       if (lib.downloads?.artifact) {
         const libPath = path.join(GAME_DIR, 'libraries', lib.downloads.artifact.path);
@@ -1834,11 +1783,9 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
     totalDownloadFiles = toDownload.length;
     completedDownloadFiles = 0;
 
-    // 并发下载所有文件
     const downloadPromises = toDownload.map(item => downloadFile(item.url, item.dest, item.label));
     await Promise.all(downloadPromises);
 
-    // 解压原生库
     const nativesDir = path.join(GAME_DIR, 'versions', versionId, 'natives');
     if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true });
 
@@ -1863,8 +1810,7 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
     }
 
     writeLog(`下载完成：${versionId}`);
-    
-    // 更新版本最后启动时间
+
     updateVersionLastPlayed(versionId, targetDir);
     
     return { success: true };
@@ -1884,7 +1830,6 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
   }
 }
 
-// 更新版本的最后启动时间
 function updateVersionLastPlayed(versionId, targetDir) {
   try {
     const versionDir = targetDir || path.join(GAME_DIR, 'versions', versionId);
@@ -1892,8 +1837,7 @@ function updateVersionLastPlayed(versionId, targetDir) {
     const configPath = path.join(gpclDir, 'config.json');
     
     let settings = {};
-    
-    // 读取现有配置
+
     if (fs.existsSync(configPath)) {
       try {
         settings = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -1901,16 +1845,13 @@ function updateVersionLastPlayed(versionId, targetDir) {
         settings = {};
       }
     }
-    
-    // 更新最后启动时间
+
     settings.lastPlayed = new Date().toISOString();
-    
-    // 确保目录存在
+
     if (!fs.existsSync(gpclDir)) {
       fs.mkdirSync(gpclDir, { recursive: true });
     }
-    
-    // 保存配置
+
     fs.writeFileSync(configPath, JSON.stringify(settings, null, 2), 'utf8');
     writeLog(`[版本] ${versionId} 最后启动时间已更新: ${settings.lastPlayed}`);
     
@@ -1935,41 +1876,34 @@ ipcMain.handle('scan-versions', async (_, gameDir, silent = false) => {
       const versionDir = path.join(versionsDir, entry.name);
       try {
         const files = fs.readdirSync(versionDir);
-        
-        // 检查是否只有一个 CancelDownload.txt 文件
+
         if (files.length === 1 && files[0] === 'CancelDownload.txt') {
           skippedVersions.push(entry.name);
           if (!silent) writeLog(`扫描本地版本：跳过空目录 "${entry.name}"（仅包含 CancelDownload.txt）`);
           continue;
         }
-        
-        // 查找所有 .json 文件
+
         const jsonFiles = files.filter(f => f.endsWith('.json'));
-        
-        // 如果没有 .json 文件，跳过
+
         if (jsonFiles.length === 0) {
           skippedVersions.push(entry.name);
           if (!silent) writeLog(`扫描本地版本：跳过 "${entry.name}"（无 .json 文件）`);
           continue;
         }
+
         
-        // 收集所有版本（包括原版和带模组加载器的版本）
-        // 原版: 1.21.1 -> versionId = "1.21.1"
-        // Forge: 1.21.1-forge -> versionId = "1.21.1-forge"
-        // Fabric: 1.21.1-fabric -> versionId = "1.21.1-fabric"
+
         
-        const baseVersionId = entry.name; // 文件夹名
-        const mcVersion = baseVersionId; // MC 版本号
-        
-        // 总是添加原版
+        const baseVersionId = entry.name; 
+        const mcVersion = baseVersionId; 
+
         if (jsonFiles.includes(`${baseVersionId}.json`)) {
           versions.push(baseVersionId);
         }
-        
-        // 检查是否有模组加载器版本
+
         for (const jsonFile of jsonFiles) {
           const jsonVersionId = jsonFile.replace('.json', '');
-          // 如果不是原版，且不在列表中，添加它
+          
           if (jsonVersionId !== baseVersionId && !versions.includes(jsonVersionId)) {
             versions.push(jsonVersionId);
           }
@@ -2018,7 +1952,7 @@ ipcMain.handle('get-version-manifest', async () => {
     }
 
     const parsed = JSON.parse(data);
-    // 返回所有类型的版本，包括正式版、快照版、旧测试版
+    
     writeLog(`版本列表：共 ${parsed.versions.length} 个版本`);
     return parsed.versions;
   } catch (e) {
@@ -2087,8 +2021,7 @@ ipcMain.handle('save-version-settings', async (_, versionId, settings) => {
     }
     
     const configPath = path.join(gpclDir, 'config.json');
-    
-    // 保存设置
+
     fs.writeFileSync(configPath, JSON.stringify(settings, null, 2), 'utf8');
     
     writeLog(`[版本设置] 版本 ${versionId} 设置已保存`);
@@ -2161,14 +2094,13 @@ ipcMain.handle('select-directory', async () => {
   return result.filePaths[0];
 });
 
-// 检查指定Minecraft版本所需的Java是否已安装
 ipcMain.handle('check-java', async (_, versionOrJavaVersion) => {
   try {
-    // 判断是Minecraft版本号还是Java版本号
+    
     const isMcVersion = versionOrJavaVersion && versionOrJavaVersion.match(/^\d+\.\d+/);
     
     if (isMcVersion) {
-      // Minecraft版本，检查该版本需要的Java
+      
       const versionId = versionOrJavaVersion;
       const jsonPath = path.join(GAME_DIR, 'versions', versionId, versionId + '.json');
       if (!fs.existsSync(jsonPath)) {
@@ -2186,7 +2118,7 @@ ipcMain.handle('check-java', async (_, versionOrJavaVersion) => {
         javaPath: result.javaPath
       };
     } else {
-      // Java版本，直接检查该版本是否安装
+      
       const javaVersion = versionOrJavaVersion;
       const result = await checkJavaInstalled(javaVersion);
       
@@ -2203,7 +2135,6 @@ ipcMain.handle('check-java', async (_, versionOrJavaVersion) => {
   }
 });
 
-// 解析 Minecraft 启动参数模板
 function parseMCArguments(template, vars) {
   let result = template;
   for (const [key, value] of Object.entries(vars)) {
@@ -2212,7 +2143,6 @@ function parseMCArguments(template, vars) {
   return result;
 }
 
-// 智能分割参数（处理引号内的空格）
 function splitArgs(str) {
   const args = [];
   let current = '';
@@ -2236,7 +2166,6 @@ function splitArgs(str) {
   return args;
 }
 
-// 检查库规则是否允许当前平台
 function checkLibraryRules(rules) {
   if (!rules || rules.length === 0) return true;
   let allowed = false;
@@ -2255,19 +2184,18 @@ function checkLibraryRules(rules) {
   return allowed;
 }
 
-// 构建 Minecraft 启动参数
 function buildLaunchArgs(vd, gameDir, versionId, username, windowMode, memoryMB, serverIp) {
   const cp = [];
-  // 优先使用 downloads.client 的 jar 路径
+  
   const clientJar = path.join(gameDir, 'versions', versionId, `${versionId}.jar`);
   if (fs.existsSync(clientJar)) {
     cp.push(clientJar);
   }
-  // 添加库（带平台规则过滤）
+  
   let missingLibs = 0;
   for (const lib of vd.libraries || []) {
     if (!checkLibraryRules(lib.rules)) continue;
-    // 普通 artifact
+    
     if (lib.downloads?.artifact?.path) {
       const libPath = path.join(gameDir, 'libraries', lib.downloads.artifact.path);
       if (fs.existsSync(libPath)) {
@@ -2277,7 +2205,7 @@ function buildLaunchArgs(vd, gameDir, versionId, username, windowMode, memoryMB,
         writeLog(`[启动] 库文件缺失: ${lib.downloads.artifact.path}`);
       }
     }
-    // Natives（Windows 平台）
+    
     if (lib.downloads?.classifiers?.['natives-windows']?.path) {
       const nativePath = path.join(gameDir, 'libraries', lib.downloads.classifiers['natives-windows'].path);
       if (fs.existsSync(nativePath)) {
@@ -2300,7 +2228,6 @@ function buildLaunchArgs(vd, gameDir, versionId, username, windowMode, memoryMB,
     '-cp', cp.join(';'),
   ];
 
-  // 添加内存参数
   if (memoryMB) {
     jvmArgs.unshift(`-Xmx${memoryMB}M`);
     writeLog(`[启动] 已设置最大内存: ${memoryMB}M`);
@@ -2324,21 +2251,20 @@ function buildLaunchArgs(vd, gameDir, versionId, username, windowMode, memoryMB,
 
   let gameArgs = [];
 
-  // 新版格式 (1.13+)
   if (vd.arguments?.game) {
     for (const arg of vd.arguments.game) {
       if (typeof arg === 'string') {
         gameArgs.push(parseMCArguments(arg, vars));
       }
-      // 忽略条件参数（简化处理）
+      
     }
   }
-  // 旧版格式 (1.12.2 及以下)
+  
   else if (vd.minecraftArguments) {
     const parsed = parseMCArguments(vd.minecraftArguments, vars);
     gameArgs = splitArgs(parsed);
   }
-  // 兜底
+  
   else {
     gameArgs = [
       '--username', username,
@@ -2351,12 +2277,11 @@ function buildLaunchArgs(vd, gameDir, versionId, username, windowMode, memoryMB,
     ];
   }
 
-  // 根据窗口模式添加参数
   if (windowMode === 'fullscreen') {
     gameArgs.push('--fullscreen');
     writeLog(`[启动] 已添加全屏参数: --fullscreen`);
   } else if (windowMode === 'borderless') {
-    // 无边框窗口模式：使用全屏但无边框的分辨率
+    
     gameArgs.push('--fullscreen');
     gameArgs.push('--width');
     gameArgs.push('1920');
@@ -2364,11 +2289,10 @@ function buildLaunchArgs(vd, gameDir, versionId, username, windowMode, memoryMB,
     gameArgs.push('1080');
     writeLog(`[启动] 已添加无边框窗口参数: --fullscreen --width 1920 --height 1080`);
   } else if (windowMode === 'minimized') {
-    // 最小化模式，不添加特殊参数，但会在游戏启动后自动最小化
+    
     writeLog(`[启动] 已设置最小化模式`);
   }
 
-  // 如果有服务器IP，添加服务器连接参数
   if (serverIp && serverIp.trim()) {
     const ipParts = serverIp.trim().split(':');
     const serverAddress = ipParts[0];
@@ -2387,17 +2311,16 @@ function buildLaunchArgs(vd, gameDir, versionId, username, windowMode, memoryMB,
 
 ipcMain.handle('launch-minecraft', async (_, opt) => {
   try {
-    // 重置取消标志
+    
     launchCancelFlag = false;
     
     const { versionId, username, gameDir: rawGameDir, windowMode } = opt;
-    // 使用传入的路径或默认的 GAME_DIR
+    
     const gameDir = rawGameDir ? path.resolve(rawGameDir) : GAME_DIR;
-    // 窗口模式：fullscreen, windowed, borderless
+    
     const mode = windowMode || 'windowed';
     writeLog(`启动游戏：玩家 ${username}，版本 ${versionId}，目录: ${gameDir}，窗口模式: ${mode}`);
-    
-    // 检查是否已取消
+
     if (launchCancelFlag) {
       writeLog('[启动] 用户已取消启动');
       return { success: false, error: '启动已取消', cancelled: true };
@@ -2411,45 +2334,39 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
 
     const vd = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     const javaVersion = getJavaVersionFromVersionData(vd);
-    
-    // 检查是否已取消
+
     if (launchCancelFlag) {
       writeLog('[启动] 用户已取消启动');
       return { success: false, error: '启动已取消', cancelled: true };
     }
-    
-    // 加载设置
+
     const settings = loadSettings();
     let memoryMB = null;
     let actualWindowMode = mode;
     let serverIp = null;
-    
-    // 首先检查是否有版本特定设置
+
     try {
       const versionConfigPath = path.join(gameDir, 'versions', versionId, 'gpcl', 'config.json');
       if (fs.existsSync(versionConfigPath)) {
         const versionSettings = JSON.parse(fs.readFileSync(versionConfigPath, 'utf8'));
-        
-        // 处理内存设置
+
         if (versionSettings.memory && versionSettings.memory !== 'global') {
           const memoryVal = parseFloat(versionSettings.memory);
           if (!isNaN(memoryVal)) {
             if (versionSettings.memory === '0.5') {
-              memoryMB = 512; // 0.5GB = 512MB
+              memoryMB = 512; 
             } else {
               memoryMB = Math.floor(memoryVal * 1024);
             }
             writeLog(`[启动] 使用版本内存设置: ${memoryMB}M`);
           }
         }
-        
-        // 处理窗口模式设置
+
         if (versionSettings.windowMode && versionSettings.windowMode !== 'global') {
           actualWindowMode = versionSettings.windowMode;
           writeLog(`[启动] 使用版本窗口模式: ${actualWindowMode}`);
         }
-        
-        // 处理启动模式和服务器IP
+
         if (versionSettings.startupMode === 'join' && versionSettings.serverIp) {
           serverIp = versionSettings.serverIp;
           writeLog(`[启动] 使用版本启动模式: 加入服务器 ${serverIp}`);
@@ -2458,8 +2375,7 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
     } catch (e) {
       writeLog(`[启动] 读取版本设置失败: ${e.message}`);
     }
-    
-    // 如果没有版本特定设置，使用全局设置
+
     if (memoryMB === null && settings.game?.memory) {
       const globalMemory = parseFloat(settings.game.memory);
       if (!isNaN(globalMemory)) {
@@ -2467,38 +2383,31 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
         writeLog(`[启动] 使用全局内存设置: ${memoryMB}M`);
       }
     }
-    
-    // 检查是否已取消
+
     if (launchCancelFlag) {
       writeLog('[启动] 用户已取消启动');
       return { success: false, error: '启动已取消', cancelled: true };
     }
-    
-    // 检查Java是否已安装
+
     let java = await ensureJavaRuntime(javaVersion);
-    
-    // 检查是否已取消（在Java检查后）
+
     if (launchCancelFlag) {
       writeLog('[启动] 用户已取消启动');
       return { success: false, error: '启动已取消', cancelled: true };
     }
-    
-    // 如果Java未安装，自动下载
+
     if (!java) {
       writeLog(`[Java] Java ${javaVersion} 未安装，自动开始下载`);
-      
-      // 发送通知给渲染进程
+
       if (mainWindow) {
         mainWindow.webContents.send('java-auto-download-start', {
           javaVersion: javaVersion,
           mcVersion: versionId
         });
       }
-      
-      // 自动下载并安装Java（期间检查取消标志）
+
       const installResult = await downloadAndInstallJava(javaVersion);
-      
-      // 检查是否已取消（在Java下载后）
+
       if (launchCancelFlag) {
         writeLog('[启动] 用户已取消启动（Java下载完成后）');
         return { success: false, error: '启动已取消', cancelled: true };
@@ -2507,8 +2416,7 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
       if (installResult.success) {
         java = installResult.javaPath;
         writeLog(`[Java] Java ${javaVersion} 安装成功: ${java}`);
-        
-        // 发送安装完成通知
+
         if (mainWindow) {
           mainWindow.webContents.send('java-auto-download-complete', {
             javaVersion: javaVersion,
@@ -2524,7 +2432,6 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
       }
     }
 
-    // 最终检查是否已取消（在启动游戏前）
     if (launchCancelFlag) {
       writeLog('[启动] 用户已取消启动（即将启动游戏前）');
       return { success: false, error: '启动已取消', cancelled: true };
@@ -2561,7 +2468,6 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
     currentGameProcess = proc;
     currentGamePid = proc.pid;
 
-    // 如果已经被取消，立即杀死
     if (launchCancelFlag) {
       writeLog('[启动] 进程已启动但取消标志已设置，立即终止');
       killGameProcessTree(proc.pid);
@@ -2571,16 +2477,13 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
       return { success: false, error: '启动已取消', cancelled: true };
     }
 
-    // 检测游戏窗口创建成功
     await detectGameWindow(proc.pid);
 
-    // 检测结束后再次检查取消标志（可能在窗口检测期间被取消）
     if (launchCancelFlag) {
       writeLog('[启动] 窗口检测结束后检测到取消标志');
       return { success: false, error: '启动已取消', cancelled: true };
     }
 
-    // 捕获输出用于调试
     let stdoutData = '';
     let stderrData = '';
     proc.stdout?.on('data', d => {
@@ -2635,7 +2538,6 @@ ipcMain.handle('launch-minecraft', async (_, opt) => {
   }
 });
 
-// 检测游戏窗口创建成功
 async function detectGameWindow(pid) {
   writeLog(`[启动] 开始检测游戏窗口，PID: ${pid}`);
 
@@ -2721,12 +2623,10 @@ async function detectGameWindow(pid) {
   });
 }
 
-// IPC: 下载并安装Java运行时
 ipcMain.handle('install-java', async (_, javaVersion) => {
   try {
     writeLog(`[Java] 开始安装 Java ${javaVersion}`);
-    
-    // 发送下载开始消息
+
     if (mainWindow) {
       mainWindow.webContents.send('java-download-started', { javaVersion });
     }
@@ -3157,7 +3057,6 @@ ipcMain.handle('write-json-file', async (_, subPath, fileName, data) => {
   }
 });
 
-// 获取 Forge 版本列表
 ipcMain.handle('get-forge-versions', async (_, mcVersion) => {
   try {
     writeLog(`[Forge] 获取版本列表: ${mcVersion}`);
@@ -3169,11 +3068,10 @@ ipcMain.handle('get-forge-versions', async (_, mcVersion) => {
   }
 });
 
-// 从 Forge Maven 获取版本列表
 async function fetchForgeVersions(mcVersion) {
   return new Promise((resolve, reject) => {
     const https = require('https');
-    const url = `https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json`;
+    const url = `https:
     
     https.get(url, { timeout: 10000 }, (res) => {
       let data = '';
@@ -3186,8 +3084,7 @@ async function fetchForgeVersions(mcVersion) {
         try {
           const metadata = JSON.parse(data);
           const versions = [];
-          
-          // 查找对应 MC 版本的 Forge 版本
+
           const versionArray = metadata[mcVersion];
           if (versionArray && Array.isArray(versionArray)) {
             versionArray.forEach((fullVersion) => {
@@ -3201,14 +3098,11 @@ async function fetchForgeVersions(mcVersion) {
               });
             });
           }
-          
-          // 按版本号排序（最新的在前）
+
           versions.sort((a, b) => compareVersions(b.version, a.version));
-          
-          // 只返回前 10 个版本
+
           const topVersions = versions.slice(0, 10);
-          
-          // 标记推荐版本（第一个）
+
           if (topVersions.length > 0) {
             topVersions[0].name += ' (推荐)';
           }
@@ -3228,7 +3122,6 @@ async function fetchForgeVersions(mcVersion) {
   });
 }
 
-// 版本号比较函数
 function compareVersions(v1, v2) {
   const parts1 = v1.split(/[.-]/).map(p => parseInt(p, 10) || 0);
   const parts2 = v2.split(/[.-]/).map(p => parseInt(p, 10) || 0);
@@ -3245,16 +3138,14 @@ function compareVersions(v1, v2) {
 async function installVersionWithModLoader(versionId, loaderType, loaderVersion, maxConcurrent) {
   try {
     writeLog(`[模组加载器] 开始下载: ${loaderType} ${loaderVersion} for MC ${versionId}`);
-    
-    // 1. 先下载原版游戏
+
     writeLog(`[模组加载器] 下载原版 MC ${versionId}`);
     await installVersion(versionId, maxConcurrent);
     
     if (shouldCancelDownload) {
       return { success: false, error: '下载已取消' };
     }
-    
-    // 2. 根据模组加载器类型进行安装
+
     let finalVersionId;
     if (loaderType === 'forge') {
       finalVersionId = await installForge(versionId, loaderVersion);
@@ -3263,8 +3154,7 @@ async function installVersionWithModLoader(versionId, loaderType, loaderVersion,
     }
     
     writeLog(`[模组加载器] 安装完成: ${finalVersionId}`);
-    
-    // 更新版本最后启动时间
+
     updateVersionLastPlayed(finalVersionId);
     
     return { success: true, finalVersionId };
@@ -3275,7 +3165,6 @@ async function installVersionWithModLoader(versionId, loaderType, loaderVersion,
   }
 }
 
-// 安装 Forge：直接从 Forge Maven 下载完整的版本 JSON
 async function installForge(mcVersion, forgeVersion) {
   writeLog(`[Forge] 安装: MC ${mcVersion}, Forge ${forgeVersion}`);
   
@@ -3283,12 +3172,10 @@ async function installForge(mcVersion, forgeVersion) {
   if (!fs.existsSync(versionDir)) {
     throw new Error(`原版版本 ${mcVersion} 不存在`);
   }
-  
-  // 构造完整的 Forge 版本 ID（如 1.20.1-47.2.0）
+
   const fullForgeVersionId = `${mcVersion}-${forgeVersion}`;
-  
-  // Forge 在 Maven 上提供了完整的版本 JSON（含 mainClass、libraries、inheritsFrom 等）
-  const forgeJsonUrl = `https://maven.minecraftforge.net/net/minecraftforge/forge/${fullForgeVersionId}/forge-${fullForgeVersionId}.json`;
+
+  const forgeJsonUrl = `https:
   
   writeLog(`[Forge] 下载版本 JSON: ${forgeJsonUrl}`);
   let forgeJsonData;
@@ -3327,7 +3214,6 @@ Forge=${forgeVersion}
   return forgeJsonId;
 }
 
-// 读取 config.ini 配置文件
 function readVersionConfig(versionId) {
   const versionDir = path.join(GAME_DIR, 'versions', versionId);
   const configPath = path.join(versionDir, 'gpcl', 'config.ini');
@@ -3373,7 +3259,6 @@ function readVersionConfig(versionId) {
   }
 }
 
-// 生成版本显示名称
 function generateVersionDisplayName(versionId) {
   const config = readVersionConfig(versionId);
   
@@ -3391,7 +3276,6 @@ function generateVersionDisplayName(versionId) {
   return parts.join(' ');
 }
 
-// 生成启动页显示名称
 function generateLaunchDisplayName(versionId) {
   const config = readVersionConfig(versionId);
   
@@ -3409,4 +3293,97 @@ function generateLaunchDisplayName(versionId) {
   return parts.join(' ');
 }
 
+ipcMain.handle('get-memory-usage', () => {
+  return new Promise((resolve) => {
+    if (process.platform === 'win32') {
+      const { spawn } = require('child_process');
+      const wmic = spawn('wmic', ['process', 'where', `processid=${process.pid}`, 'get', 'WorkingSetSize', '/value']);
+      
+      let output = '';
+      wmic.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+      
+      wmic.on('close', (code) => {
+        try {
+          const match = output.match(/WorkingSetSize=(\d+)/);
+          if (match) {
+            const memBytes = parseInt(match[1]);
+            const memGB = memBytes / (1024 * 1024 * 1024);
+            writeLog(`[内存获取] WMIC成功: ${memGB.toFixed(2)}GB`);
+            resolve(parseFloat(memGB.toFixed(2)));
+          } else {
+            writeLog(`[内存获取] WMIC匹配失败，输出: "${output.trim()}"`);
+            const memUsage = process.memoryUsage();
+            const memGB = memUsage.heapUsed / (1024 * 1024 * 1024);
+            resolve(parseFloat(memGB.toFixed(2)));
+          }
+        } catch (e) {
+          writeLog(`[内存获取] WMIC解析失败: ${e.message}`);
+          const memUsage = process.memoryUsage();
+          const memGB = memUsage.heapUsed / (1024 * 1024 * 1024);
+          resolve(parseFloat(memGB.toFixed(2)));
+        }
+      });
+      
+      wmic.on('error', (e) => {
+        writeLog(`[内存获取] WMIC调用失败: ${e.message}`);
+        const memUsage = process.memoryUsage();
+        const memGB = memUsage.heapUsed / (1024 * 1024 * 1024);
+        resolve(parseFloat(memGB.toFixed(2)));
+      });
+    } else {
+      const memUsage = process.memoryUsage();
+      const memGB = memUsage.heapUsed / (1024 * 1024 * 1024);
+      resolve(parseFloat(memGB.toFixed(2)));
+    }
+  });
+});
 
+ipcMain.handle('optimize-memory', async () => {
+  writeLog('[内存优化] 开始执行内存优化...');
+  
+  if (process.platform === 'win32') {
+    const { exec } = require('child_process');
+    
+    return new Promise((resolve) => {
+      exec('rundll32.exe advapi32.dll,ProcessIdleTasks', { timeout: 30000 }, (error, stdout, stderr) => {
+        if (error) {
+          writeLog(`[内存优化] ProcessIdleTasks执行失败: ${error.message}`);
+        }
+        
+        setTimeout(() => {
+          if (global.gc) {
+            writeLog('[内存优化] 执行V8垃圾回收...');
+            global.gc();
+          }
+          
+          if (mainWindow) {
+            writeLog('[内存优化] 清理渲染进程缓存...');
+            mainWindow.webContents.session.clearCache().catch((e) => writeLog(`[内存优化] 清理缓存失败: ${e.message}`));
+            mainWindow.webContents.session.clearStorageData().catch((e) => writeLog(`[内存优化] 清理存储失败: ${e.message}`));
+          }
+          
+          setTimeout(() => {
+            writeLog('[内存优化] 内存优化完成');
+            resolve(true);
+          }, 2000);
+        }, 3000);
+      });
+    });
+  } else {
+    if (global.gc) {
+      writeLog('[内存优化] 执行V8垃圾回收...');
+      global.gc();
+    }
+    
+    if (mainWindow) {
+      writeLog('[内存优化] 清理渲染进程缓存...');
+      await mainWindow.webContents.session.clearCache();
+      await mainWindow.webContents.session.clearStorageData();
+    }
+    
+    writeLog('[内存优化] 内存优化完成');
+    return true;
+  }
+});

@@ -78,6 +78,23 @@
       margin-top: 10px;
     }
 
+    .powered-by {
+      font-size: 10px;
+      color: #5f6d85;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .powered-by a {
+      color: #666;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .powered-by a:hover {
+      color: #4fc3f7;
+    }
+
     .copyright {
       position: fixed;
       bottom: 30px;
@@ -136,6 +153,52 @@
         opacity: 0;
       }
     }
+
+    body.light-mode {
+      background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
+    }
+
+    body.light-mode .brand-name {
+      color: #2d4a6f;
+    }
+
+    body.light-mode .brand-name .highlight {
+      color: #0099ff;
+    }
+
+    body.light-mode .version-info {
+      color: #6a8aa6;
+    }
+
+    body.light-mode .powered-by {
+      color: #8aa0c0;
+    }
+
+    body.light-mode .powered-by a {
+      color: #666;
+    }
+
+    body.light-mode .powered-by a:hover {
+      color: #0099ff;
+    }
+
+    body.light-mode .logo {
+      background: linear-gradient(135deg, rgba(0, 153, 255, 0.15), rgba(0, 119, 204, 0.08));
+      animation: pulse-light 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-light {
+      0%, 100% {
+        box-shadow: 0 0 30px rgba(0, 153, 255, 0.2);
+      }
+      50% {
+        box-shadow: 0 0 60px rgba(0, 153, 255, 0.35);
+      }
+    }
+
+    body.light-mode .particle {
+      background: rgba(0, 153, 255, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -149,6 +212,9 @@
       <span class="highlight">G</span>ood <span class="highlight">P</span>lan <span class="highlight">C</span>raft <span class="highlight">L</span>auncher
     </div>
     <div class="version-info" id="version-info">v1.1.0</div>
+    <div class="powered-by">
+      Powered by <a href="https://www.caellab.com/" target="_blank">虚舟实验室(CaelLab)</a> & You
+    </div>
   </div>
 
   <script>
@@ -165,6 +231,13 @@
       }
     }
 
+    function detectTheme() {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.body.classList.add('light-mode');
+      }
+    }
+
+    detectTheme();
     createParticles();
 
     window.addEventListener('DOMContentLoaded', () => {

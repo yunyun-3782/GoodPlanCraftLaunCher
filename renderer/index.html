@@ -24,6 +24,7 @@
             <li id="menu-launch" class="menu-item"><span class="menu-icon">▶</span>启动</li>
             <li id="menu-download" class="menu-item"><span class="menu-icon">⬇</span>下载</li>
             <li id="menu-settings" class="menu-item"><span class="menu-icon">⚙</span>设置</li>
+            <li id="menu-more" class="menu-item"><span class="menu-icon">⋮</span>更多</li>
           </ul>
         </nav>
       </div>
@@ -434,7 +435,7 @@
           </div>
           
           <div class="settings-content">
-            <!-- 游戏设置 -->
+            
             <div id="settings-content-game" class="settings-content-panel active">
               <div class="settings-page-inner">
                 <div class="settings-group">
@@ -492,8 +493,7 @@
                 </div>
               </div>
             </div>
-            
-            <!-- 兼容性设置 -->
+
             <div id="settings-content-compatibility" class="settings-content-panel hidden">
               <div class="settings-page-inner">
                 <div class="settings-group">
@@ -517,8 +517,7 @@
                 </div>
               </div>
             </div>
-            
-            <!-- 外观设置 -->
+
             <div id="settings-content-appearance" class="settings-content-panel hidden">
               <div class="settings-page-inner">
                 <div class="settings-group">
@@ -601,11 +600,25 @@
                       </div>
                     </div>
                   </div>
+
+                  <div class="setting-card">
+                    <div class="setting-row">
+                      <div class="setting-left">
+                        <div class="setting-label">启用更多</div>
+                        <div class="setting-desc">显示顶部导航栏中的"更多"菜单</div>
+                      </div>
+                      <div class="setting-control">
+                        <label class="switch">
+                          <input type="checkbox" id="enable-more" checked>
+                          <span class="slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            
-            <!-- 下载设置 -->
+
             <div id="settings-content-download" class="settings-content-panel hidden">
               <div class="settings-page-inner">
                 <div class="settings-group">
@@ -626,7 +639,6 @@
                     </div>
                   </div>
 
-                  <!-- Java镜像源设置 -->
                   <div class="setting-card">
                     <div class="setting-row">
                       <div class="setting-left">
@@ -674,8 +686,7 @@
                 </div>
               </div>
             </div>
-            
-            <!-- 高级设置 -->
+
             <div id="settings-content-advanced" class="settings-content-panel hidden">
               <div class="settings-page-inner">
                 <div class="settings-group">
@@ -750,8 +761,7 @@
                 </div>
               </div>
             </div>
-            
-            <!-- 关于页面 -->
+
             <div id="settings-content-about" class="settings-content-panel hidden">
               <div class="settings-page-inner">
                 <div class="settings-group">
@@ -769,24 +779,114 @@
                     <button id="check-update-btn" class="check-update-btn">检查更新</button>
                     <div id="update-status" class="update-status"></div>
                     <button id="go-download-btn" class="go-download-btn hidden">立即前往下载</button>
+                    
+                    <div class="auto-update-setting">
+                      <div class="setting-row">
+                        <div class="setting-left">
+                          <div class="setting-label">自动检查更新</div>
+                          <div class="setting-desc">启动时自动检查是否有新版本可用</div>
+                        </div>
+                        <div class="setting-control">
+                          <label class="switch">
+                            <input type="checkbox" id="auto-check-update" checked>
+                            <span class="slider"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="setting-card">
-                    <div class="setting-row">
-                      <div class="setting-left">
-                        <div class="setting-label">自动检查更新</div>
-                        <div class="setting-desc">启动时自动检查是否有新版本可用</div>
+                    <div class="about-developer">
+                      <img src="../static/more/avatar/yunyun.jpg" alt="Yunyun" class="developer-avatar">
+                      <div class="developer-info">
+                        <div class="developer-name">Yunyun</div>
+                        <div class="developer-role">GoodPlanCraftLauncher 的开发者！</div>
                       </div>
-                      <div class="setting-control">
-                        <label class="switch">
-                          <input type="checkbox" id="auto-check-update" checked>
-                          <span class="slider"></span>
-                        </label>
+                    </div>
+                  </div>
+
+                  <div class="setting-card">
+                    <h3 class="special-thanks-title">鸣谢</h3>
+                    <div class="thanks-list">
+                      <div class="thanks-item">
+                        <div class="thanks-avatar">📦</div>
+                        <div class="thanks-info">
+                          <div class="thanks-name">bangbang93</div>
+                          <div class="thanks-desc">提供 BMCLAPI 镜像源和 Forge 安装工具</div>
+                        </div>
+                      </div>
+                      <div class="thanks-item">
+                        <div class="thanks-avatar">📚</div>
+                        <div class="thanks-info">
+                          <div class="thanks-name">MC 百科</div>
+                          <div class="thanks-desc">提供了 Mod 名称的中文翻译和更多相关信息</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-card">
+                    <h3 class="acknowledgement-title">鸣谢</h3>
+                    <div class="acknowledgement-item">
+                      <img src="../static/more/avatar/sgmxe.jpg" alt="上古米歇尔" class="acknowledgement-avatar">
+                      <div class="acknowledgement-content">
+                        <div class="acknowledgement-name">上古米歇尔</div>
+                        <blockquote class="acknowledgement-quote">知觉赋予感觉以意义，因此知觉产生的是对世界的解释，而不是对世界的完美表征。</blockquote>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="more-page" class="settings-page hidden">
+          <div class="settings-sidebar" id="more-sidebar">
+            <ul class="settings-sidebar-menu">
+              <li id="more-tab-toolbox" class="settings-sidebar-item active" data-tab="toolbox">
+                <span class="sidebar-icon">📦</span>
+                <span class="sidebar-label">百宝箱</span>
+              </li>
+              <li id="more-tab-forum" class="settings-sidebar-item" data-tab="forum">
+                <span class="sidebar-icon">💬</span>
+                <span class="sidebar-label">论坛</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="settings-content">
+            <div id="more-content-toolbox" class="settings-content-panel active">
+              <div class="settings-page-inner">
+                <div class="settings-group">
+                  <h2 class="settings-group-title">百宝箱</h2>
+                  <p class="settings-group-desc">实用工具和资源集合</p>
+                  
+                  <div class="toolbox-row">
+                    <div class="toolbox-card-wide">
+                      <div class="toolbox-icon-large">💾</div>
+                      <div class="toolbox-content">
+                        <div class="toolbox-title">内存优化</div>
+                        <div class="toolbox-description">将物理内存降低，但这不仅限于GPCL和Minecraft！但如果你使用的是机械盘，会造成短暂的严重卡顿</div>
+                        <button id="memory-optimize-btn" class="toolbox-btn-primary">
+                          <span class="btn-icon">⚡</span>
+                          <span class="btn-text">立即优化</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div id="more-content-forum" class="settings-content-panel hidden">
+              <iframe 
+                id="forum-iframe" 
+                class="forum-iframe-full"
+                sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation"
+                title="社区论坛"
+              ></iframe>
             </div>
           </div>
         </div>

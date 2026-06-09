@@ -20,7 +20,6 @@ const versionSelect = document.getElementById('version');
 const launchBtn = document.getElementById('launch-btn');
 const statusDiv = document.getElementById('status');
 
-// Download page elements
 const cancelDownloadBtn = document.getElementById('cancel-download-btn');
 const downloadBtn = document.getElementById('download-btn-page');
 const versionListContainer = document.getElementById('version-list-container');
@@ -33,14 +32,16 @@ const versionCountLabel = document.getElementById('version-count-label');
 const menuDownload = document.getElementById('menu-download');
 const menuLaunch = document.getElementById('menu-launch');
 const menuSettings = document.getElementById('menu-settings');
+const menuMore = document.getElementById('menu-more');
 const downloadPage = document.getElementById('download-page');
 const launchPanel = document.getElementById('launch-panel');
+const settingsPage = document.getElementById('settings-page');
+const morePage = document.getElementById('more-page');
 const mainContent = document.querySelector('.main-content .container');
 
 const minimizeBtn = document.getElementById('minimize-btn');
 const closeBtn = document.getElementById('close-btn');
 
-// Toast notification system
 const toastContainer = document.getElementById('toast-container');
 const toastHistory = new Map();
 const TOAST_DEDUP_MS = 3000;
@@ -110,7 +111,6 @@ if (dialogBtnCancel) {
   });
 }
 
-// 监听下载时关闭窗口的询问
 if (window.gpcl && window.gpcl.onConfirmCloseWhileDownloading) {
   window.gpcl.onConfirmCloseWhileDownloading(async () => {
     const result = await showDialog({
@@ -120,12 +120,12 @@ if (window.gpcl && window.gpcl.onConfirmCloseWhileDownloading) {
     });
 
     if (result) {
-      // 用户点击"是"，确认关闭并清理
+      
       if (window.gpcl && window.gpcl.confirmCloseDownload) {
         await window.gpcl.confirmCloseDownload();
       }
     } else {
-      // 用户点击"否"，取消关闭
+      
       if (window.gpcl && window.gpcl.cancelClose) {
         await window.gpcl.cancelClose();
       }
@@ -158,7 +158,6 @@ function showToast(title, message, type = 'info', key = null) {
   }, 4000);
 }
 
-// Chart elements
 let chartLoaded = false;
 
 function loadChartJs() {
@@ -192,33 +191,39 @@ function getMaxConcurrentFromSettings() {
 function showPage(name) {
   currentPage = name;
 
-  const settingsPage = document.getElementById('settings-page');
-  const settingsSidebar = document.getElementById('settings-sidebar');
-
   if (name === 'download') {
     if (downloadPage) downloadPage.classList.remove('hidden');
     if (launchPanel) launchPanel.classList.add('hidden');
     if (settingsPage) settingsPage.classList.add('hidden');
+    if (morePage) morePage.classList.add('hidden');
   } else if (name === 'launch') {
     if (downloadPage) downloadPage.classList.add('hidden');
     if (launchPanel) launchPanel.classList.remove('hidden');
     if (settingsPage) settingsPage.classList.add('hidden');
+    if (morePage) morePage.classList.add('hidden');
   } else if (name === 'settings') {
     if (downloadPage) downloadPage.classList.add('hidden');
     if (launchPanel) launchPanel.classList.add('hidden');
     if (settingsPage) settingsPage.classList.remove('hidden');
-    // 默认选中第一个子页面（游戏）
+    if (morePage) morePage.classList.add('hidden');
     switchSettingsTab('game');
+  } else if (name === 'more') {
+    if (downloadPage) downloadPage.classList.add('hidden');
+    if (launchPanel) launchPanel.classList.add('hidden');
+    if (settingsPage) settingsPage.classList.add('hidden');
+    if (morePage) morePage.classList.remove('hidden');
+    switchMoreTab('toolbox');
   }
 
   if (menuDownload) menuDownload.classList.toggle('active', name === 'download');
   if (menuLaunch) menuLaunch.classList.toggle('active', name === 'launch');
   if (menuSettings) menuSettings.classList.toggle('active', name === 'settings');
+  if (menuMore) menuMore.classList.toggle('active', name === 'more');
 }
 
 function switchSettingsTab(tabName) {
-  const sidebarItems = document.querySelectorAll('.settings-sidebar-item');
-  const contentPanels = document.querySelectorAll('.settings-content-panel');
+  const sidebarItems = document.querySelectorAll('#settings-sidebar .settings-sidebar-item');
+  const contentPanels = document.querySelectorAll('#settings-page .settings-content-panel');
 
   sidebarItems.forEach(item => {
     item.classList.toggle('active', item.dataset.tab === tabName);
@@ -230,22 +235,113 @@ function switchSettingsTab(tabName) {
   });
 }
 
-// 更新菜单选中状态（确保菜单始终与当前页面同步）
+function switchMoreTab(tabName) {
+  const sidebarItems = document.querySelectorAll('#more-sidebar .settings-sidebar-item');
+  const contentPanels = document.querySelectorAll('#more-page .settings-content-panel');
+
+  sidebarItems.forEach(item => {
+    item.classList.toggle('active', item.dataset.tab === tabName);
+  });
+
+  contentPanels.forEach(panel => {
+    panel.classList.toggle('active', panel.id === `more-content-${tabName}`);
+    panel.classList.toggle('hidden', panel.id !== `more-content-${tabName}`);
+  });
+}
+
 function updateMenuActive(pageName) {
   if (menuDownload) menuDownload.classList.toggle('active', pageName === 'download');
   if (menuLaunch) menuLaunch.classList.toggle('active', pageName === 'launch');
   if (menuSettings) menuSettings.classList.toggle('active', pageName === 'settings');
+  if (menuMore) menuMore.classList.toggle('active', pageName === 'more');
 }
 
 if (menuDownload) menuDownload.addEventListener('click', () => showPage('download'));
 if (menuLaunch) menuLaunch.addEventListener('click', () => showPage('launch'));
 if (menuSettings) menuSettings.addEventListener('click', () => showPage('settings'));
+if (menuMore) menuMore.addEventListener('click', () => showPage('more'));
+
+document.querySelectorAll('#more-sidebar .settings-sidebar-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const tabName = item.dataset.tab;
+    switchMoreTab(tabName);
+  });
+});
+
+function switchMoreTab(tabName) {
+  const sidebarItems = document.querySelectorAll('#more-sidebar .settings-sidebar-item');
+  const contentPanels = document.querySelectorAll('#more-page .settings-content-panel');
+  const morePage = document.getElementById('more-page');
+  const forumIframe = document.getElementById('forum-iframe');
+
+  sidebarItems.forEach(item => {
+    item.classList.toggle('active', item.dataset.tab === tabName);
+  });
+
+  contentPanels.forEach(panel => {
+    const isForum = panel.id === `more-content-${tabName}` && tabName === 'forum';
+    panel.classList.toggle('active', panel.id === `more-content-${tabName}`);
+    panel.classList.toggle('hidden', panel.id !== `more-content-${tabName}`);
+    
+    if (isForum) {
+      if (!forumIframe.src) {
+        forumIframe.src = 'https://forum.xmuer.online/?sort=newest';
+      }
+      morePage.classList.add('forum-mode');
+      updateForumIframeSize();
+    } else {
+      morePage.classList.remove('forum-mode');
+    }
+  });
+}
+
+function updateForumIframeSize() {
+  const forumIframe = document.getElementById('forum-iframe');
+  const morePage = document.getElementById('more-page');
+  
+  if (forumIframe && morePage.classList.contains('forum-mode')) {
+    forumIframe.style.width = '100%';
+    forumIframe.style.height = '100%';
+  }
+}
+
+window.addEventListener('resize', updateForumIframeSize);
+
+const memoryOptimizeBtn = document.getElementById('memory-optimize-btn');
+if (memoryOptimizeBtn) {
+  memoryOptimizeBtn.addEventListener('click', async () => {
+    const btnIcon = memoryOptimizeBtn.querySelector('.btn-icon');
+    const btnText = memoryOptimizeBtn.querySelector('.btn-text');
+    
+    const originalIcon = btnIcon.textContent;
+    const originalText = btnText.textContent;
+    
+    memoryOptimizeBtn.disabled = true;
+    btnIcon.textContent = '⏳';
+    btnText.textContent = '优化中...';
+    
+    const beforeMemory = await window.gpcl.getMemoryUsage();
+    
+    await window.gpcl.optimizeMemory();
+    
+    const afterMemory = await window.gpcl.getMemoryUsage();
+    
+    const savedMemory = (beforeMemory - afterMemory).toFixed(2);
+    const afterMemoryFormatted = afterMemory.toFixed(2);
+    
+    memoryOptimizeBtn.disabled = false;
+    btnIcon.textContent = originalIcon;
+    btnText.textContent = originalText;
+    
+    showToast(`内存优化完成！\n当前内存占用: ${afterMemoryFormatted}GB\n比优化前减少了: ${savedMemory}GB`, 'success');
+  });
+}
 if (minimizeBtn) minimizeBtn.addEventListener('click', () => { if (window.gpcl && window.gpcl.minimizeWindow) window.gpcl.minimizeWindow(); });
 if (closeBtn) closeBtn.addEventListener('click', () => { 
   if (window.gpcl && typeof window.gpcl.closeWindow === 'function') {
     window.gpcl.closeWindow();
   } else {
-    // 备选方案：尝试直接关闭窗口
+    
     window.close();
   }
 });
@@ -261,7 +357,6 @@ function initCustomSelect(selectId, onChangeCallback) {
   const valueSpan = selectContainer.querySelector('.custom-select-value');
   const options = selectContainer.querySelectorAll('.custom-select-option');
 
-  // 保存初始状态
   let currentValue = null;
   options.forEach(option => {
     if (option.classList.contains('selected')) {
@@ -269,7 +364,6 @@ function initCustomSelect(selectId, onChangeCallback) {
     }
   });
 
-  // 点击触发器打开/关闭下拉框
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
     const isOpen = dropdown.classList.contains('open');
@@ -280,7 +374,6 @@ function initCustomSelect(selectId, onChangeCallback) {
     }
   });
 
-  // 点击选项
   options.forEach(option => {
     option.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -289,23 +382,19 @@ function initCustomSelect(selectId, onChangeCallback) {
       const value = option.dataset.value;
       const label = option.textContent;
 
-      // 更新选中状态
       options.forEach(opt => opt.classList.remove('selected'));
       option.classList.add('selected');
       valueSpan.textContent = label;
       currentValue = value;
 
-      // 关闭下拉框
       closeAllCustomSelects();
 
-      // 调用回调
       if (onChangeCallback) {
         onChangeCallback(value);
       }
     });
   });
 
-  // 保存处理函数以便后续使用
   customSelectHandlers.set(selectId, {
     setValue: (value, label) => {
       options.forEach(opt => opt.classList.remove('selected'));
@@ -328,10 +417,8 @@ function closeAllCustomSelects() {
   document.querySelectorAll('.custom-select-trigger').forEach(t => t.classList.remove('active'));
 }
 
-// 点击页面其他地方关闭下拉框
 document.addEventListener('click', closeAllCustomSelects);
 
-// 提供全局访问方法
 function setCustomSelectValue(selectId, value, label) {
   const handler = customSelectHandlers.get(selectId);
   if (handler) {
@@ -347,7 +434,6 @@ function getCustomSelectValue(selectId) {
 const DEFAULT_MAX_THREADS = 64;
 const MAX_THREADS_LIMIT = 128;
 
-// Java版本 - 官方runtime目录名映射（用于显示提示）
 const JAVA_RUNTIME_NAME_MAP = {
   "8": "jre-legacy",
   "16": "java-runtime-beta",
@@ -356,7 +442,6 @@ const JAVA_RUNTIME_NAME_MAP = {
   "25": "java-runtime-epsilon"
 };
 
-// Java版本说明（改进版，更准确的推荐）
 const JAVA_VERSION_DESC = {
   "8": { mcVersions: "1.7.10 - 1.16.5", desc: "经典版本兼容" },
   "17": { mcVersions: "1.17 - 1.20.4", desc: "最稳定，推荐使用" },
@@ -368,7 +453,6 @@ function getJavaRuntimeName(javaVersion) {
   return JAVA_RUNTIME_NAME_MAP[javaVersion] || `jre${javaVersion}`;
 }
 
-// 初始化Java版本状态检测
 async function initJavaVersionStatus() {
   const javaVersions = ["8", "17", "21", "25"];
 
@@ -396,11 +480,9 @@ async function initJavaVersionStatus() {
     }
   }
 
-  // 更新Java安装状态提示
   updateJavaInstallStatus();
 }
 
-// 更新Java安装状态提示
 function updateJavaInstallStatus() {
   const statusEl = document.getElementById('java-install-status');
   if (!statusEl) return;
@@ -427,7 +509,6 @@ function updateJavaInstallStatus() {
   }
 }
 
-// 绑定Java安装按钮事件
 function bindJavaInstallButtons() {
   const buttons = document.querySelectorAll('.java-install-btn');
 
@@ -443,7 +524,6 @@ function bindJavaInstallButtons() {
   });
 }
 
-// 使用通用面板安装Java
 async function installJavaWithPanel(javaVersion) {
   const filenameEl = document.getElementById('download-filename');
   const downloadStatusEl = document.getElementById('download-status');
@@ -452,13 +532,11 @@ async function installJavaWithPanel(javaVersion) {
   const progressText = document.getElementById('progress-text');
   const cancelBtn = document.getElementById('cancel-download-btn');
 
-  // 滚动到下载页面顶部（用户主动操作）
   const downloadPage = document.getElementById('download-page');
   if (downloadPage) {
     downloadPage.scrollTop = 0;
   }
 
-  // 显示通用下载面板
   if (downloadPanel) {
     downloadPanel.classList.remove('hidden');
     downloadPanel.classList.add('download-panel-container');
@@ -469,7 +547,6 @@ async function installJavaWithPanel(javaVersion) {
   if (progressText) progressText.textContent = '0%';
   if (cancelBtn) cancelBtn.disabled = false;
 
-  // 禁用Java安装按钮
   document.querySelectorAll('.java-install-btn').forEach(btn => {
     btn.disabled = true;
   });
@@ -484,7 +561,6 @@ async function installJavaWithPanel(javaVersion) {
 
       showToast('安装成功', `Java ${javaVersion} 已安装完成`, 'success', 'java-install-success');
 
-      // 更新Java卡片状态
       const card = document.querySelector(`.java-version-card[data-version="${javaVersion}"]`);
       const badge = document.getElementById(`java-${javaVersion}-status`);
       const btn = card?.querySelector('.java-install-btn');
@@ -516,7 +592,6 @@ async function installJavaWithPanel(javaVersion) {
     showToast('安装失败', err.message || String(err), 'error', 'java-install-failed');
   }
 
-  // 重新启用Java安装按钮
   document.querySelectorAll('.java-install-btn').forEach(btn => {
     if (!btn.classList.contains('installed')) {
       btn.disabled = false;
@@ -525,7 +600,6 @@ async function installJavaWithPanel(javaVersion) {
   if (cancelBtn) cancelBtn.disabled = true;
 }
 
-// 卸载Java运行时（使用弹窗确认）
 async function uninstallJavaWithPanel(javaVersion) {
   const confirmed = await showDialog({
     type: 'confirm',
@@ -543,7 +617,6 @@ async function uninstallJavaWithPanel(javaVersion) {
     if (result.success) {
       showToast('卸载成功', `Java ${javaVersion} 已卸载`, 'success', 'java-uninstall-success');
 
-      // 更新Java卡片状态
       const card = document.querySelector(`.java-version-card[data-version="${javaVersion}"]`);
       const badge = document.getElementById(`java-${javaVersion}-status`);
       const btn = card?.querySelector('.java-install-btn');
@@ -568,38 +641,32 @@ async function uninstallJavaWithPanel(javaVersion) {
   }
 }
 
-// 改进的Java版本推荐（基于Minecraft版本JSON）
 function getRecommendedJavaVersionFromMC(mcVersion) {
-  // 解析Minecraft版本号
+  
   const parts = mcVersion.split('.');
   let major = parseInt(parts[0], 10);
   let minor = parseInt(parts[1], 10);
   let patch = parts.length > 2 ? parseInt(parts[2], 10) || 0 : 0;
 
-  // 处理无效 major
   if (isNaN(major)) major = 1;
 
-  // Minecraft版本对应Java版本（Mojang官方推荐）
-  // 1.7-1.16: Java 8
-  // 1.17-1.20.4: Java 17
-  // 1.20.5-1.21.4: Java 21
-  // 1.22+ / 21+: Java 21
-  // 26+: Java 21
+  
 
-  // 处理像 "26" 这种只有 major 没有 minor 的情况
+  
+
+  
   if (isNaN(minor)) {
-    // 26 及以上使用 Java 25
+    
     if (major >= 26) {
       return { version: '25', reason: `Minecraft ${mcVersion} 推荐使用 Java 25` };
     }
-    // 21-25 使用 Java 21
+    
     if (major >= 21) {
       return { version: '21', reason: `Minecraft ${mcVersion} 推荐使用 Java 21` };
     }
     return { version: '17', reason: '使用推荐的稳定版' };
   }
 
-  // 处理 1.x.x 的旧版本
   if (major === 1) {
     if (minor <= 16) {
       return { version: '8', reason: `Minecraft ${mcVersion} 官方推荐 Java 8` };
@@ -612,24 +679,21 @@ function getRecommendedJavaVersionFromMC(mcVersion) {
     }
   }
 
-  // 处理 2.x.x 和更大的版本（21, 24, 26, ...）
   if (major >= 2) {
-    // 26 及以上使用 Java 25
+    
     if (major >= 26) {
       return { version: '25', reason: `Minecraft ${mcVersion} 推荐使用 Java 25` };
     }
     return { version: '21', reason: `Minecraft ${mcVersion} 推荐使用 Java 21` };
   }
 
-  // 默认返回最稳定的版本
   return { version: '17', reason: '使用推荐的稳定版' };
 }
 
-// 监听Java下载进度
 if (window.gpcl && window.gpcl.onDownloadProgress) {
   const originalCallback = window.gpcl.onDownloadProgress;
   window.gpcl.onDownloadProgress((data) => {
-    // 更新通用下载面板的进度
+    
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
     const filenameEl = document.getElementById('download-filename');
@@ -647,7 +711,6 @@ if (window.gpcl && window.gpcl.onDownloadProgress) {
       downloadStatusEl.textContent = `正在下载: ${data.label}`;
     }
 
-    // 更新漂浮通知的进度
     const floatProgressFill = document.getElementById('float-progress-fill');
     const floatProgressText = document.getElementById('float-progress-text');
     const floatNotification = document.getElementById('float-notification');
@@ -658,14 +721,12 @@ if (window.gpcl && window.gpcl.onDownloadProgress) {
       floatProgressText.textContent = percent.toFixed(1) + '%';
     }
 
-    // 调用原始回调
     if (typeof originalCallback === 'function') {
       originalCallback(data);
     }
   });
 }
 
-// 漂浮通知控制函数
 function showFloatNotification(title, text) {
   const notification = document.getElementById('float-notification');
   const titleEl = document.getElementById('float-notification-title');
@@ -674,8 +735,7 @@ function showFloatNotification(title, text) {
   if (notification && titleEl && textEl) {
     titleEl.textContent = title;
     textEl.textContent = text;
-    
-    // 重置进度
+
     const progressFill = document.getElementById('float-progress-fill');
     const progressText = document.getElementById('float-progress-text');
     if (progressFill) progressFill.style.width = '0%';
@@ -692,7 +752,6 @@ function hideFloatNotification() {
   }
 }
 
-// 监听自动下载开始事件（通过游戏日志检测）
 if (window.gpcl && window.gpcl.onGameLog) {
   window.gpcl.onGameLog((text) => {
     if (text.includes('Java') && text.includes('未安装') && text.includes('自动开始下载')) {
@@ -707,13 +766,11 @@ if (window.gpcl && window.gpcl.onGameLog) {
   });
 }
 
-// 绑定漂浮通知关闭按钮
 const floatCloseBtn = document.getElementById('float-notification-close');
 if (floatCloseBtn) {
   floatCloseBtn.addEventListener('click', hideFloatNotification);
 }
 
-// 监听Java下载完成
 if (window.gpcl && window.gpcl.onJavaDownloadCompleted) {
   window.gpcl.onJavaDownloadCompleted((data) => {
     const { javaVersion } = data;
@@ -724,7 +781,6 @@ if (window.gpcl && window.gpcl.onJavaDownloadCompleted) {
   });
 }
 
-// 监听Java下载失败
 if (window.gpcl && window.gpcl.onJavaDownloadFailed) {
   window.gpcl.onJavaDownloadFailed((data) => {
     const { error } = data;
@@ -874,12 +930,37 @@ async function reloadAllSettingsToUI() {
     skipSplashEl.checked = settings.appearance?.skipSplash === true;
   }
 
+  const enableMoreEl = document.getElementById('enable-more');
+  if (enableMoreEl) {
+    enableMoreEl.checked = settings.appearance?.enableMore !== false;
+    updateMoreMenuVisibility(settings.appearance?.enableMore !== false);
+  }
+
   const developerModeEl = document.getElementById('developer-mode');
   if (developerModeEl) {
     developerModeEl.checked = settings.advanced?.developerMode === true;
   }
 }
 
+function updateMoreMenuVisibility(enabled) {
+  const menuMore = document.getElementById('menu-more');
+  if (menuMore) {
+    menuMore.style.display = enabled ? '' : 'none';
+  }
+}
+
+const enableMoreEl = document.getElementById('enable-more');
+if (enableMoreEl) {
+  enableMoreEl.addEventListener('change', async (e) => {
+    const enabled = e.target.checked;
+    updateMoreMenuVisibility(enabled);
+    
+    const settings = await loadSettings();
+    settings.appearance = settings.appearance || {};
+    settings.appearance.enableMore = enabled;
+    await window.gpcl.saveSettings(settings);
+  });
+}
 
 }
 
@@ -980,9 +1061,7 @@ function resetChart() {
   if (progressTextEl) progressTextEl.textContent = '0%';
 }
 
-// 注意：下载进度监听在 startDownload 函数中单独处理，避免全局监听器冲突
 
-// addLog removed - using toast notifications instead
 
 function setStatus(text, type = 'info') {
   statusDiv.textContent = text;
@@ -996,7 +1075,6 @@ async function loadVersions(silent = false) {
   try {
     let versions = [];
 
-    // 尝试调用主进程API
     if (window.gpcl && typeof window.gpcl.scanVersions === 'function') {
       try {
         versions = await window.gpcl.scanVersions(null, silent);
@@ -1005,18 +1083,16 @@ async function loadVersions(silent = false) {
       }
     }
 
-    // 更新启动按钮状态（无论 versionSelect 是否存在都要更新）
     if (!versions || versions.length === 0) {
       if (!silent) setStatus('没有本地版本，请先下载');
-      // 切换按钮为前往下载状态
+      
       updateLaunchButtonState(false);
     } else {
       if (!silent) setStatus(`发现 ${versions.length} 个已安装版本`);
-      // 切换按钮为开始游戏状态
+      
       updateLaunchButtonState(true);
     }
 
-    // 检查 versionSelect 是否存在
     if (!versionSelect) {
       if (!silent) console.warn('versionSelect 元素不存在，跳过版本列表渲染');
       return;
@@ -1053,12 +1129,11 @@ async function loadVersions(silent = false) {
       setStatus('扫描本地版本失败', 'error');
       showToast('扫描失败', err.message || String(err), 'error');
     }
-    // 出错时也更新按钮为无游戏状态
+    
     updateLaunchButtonState(false);
   }
 }
 
-// 更新启动按钮状态
 function updateLaunchButtonState(hasGame) {
   const launchBtn = document.getElementById('launch-btn');
   const launchText = launchBtn?.querySelector('.launch-text');
@@ -1067,22 +1142,20 @@ function updateLaunchButtonState(hasGame) {
     if (hasGame) {
       launchText.textContent = '▶ 开始游戏';
       launchBtn.dataset.mode = 'launch';
-      // 移除红色样式
+      
       launchBtn.classList.remove('no-game');
     } else {
       launchText.textContent = '⏬ 前往下载';
       launchBtn.dataset.mode = 'download';
-      // 添加红色样式
+      
       launchBtn.classList.add('no-game');
     }
   }
 }
 
-// 版本时间记录相关功能
 const VERSION_HISTORY_FILE = 'gpcl_version_history.json';
 const VERSION_HISTORY_PATH = 'users';
 
-// 获取版本历史记录
 async function getVersionHistory() {
   try {
     if (window.gpcl && typeof window.gpcl.readJsonFile === 'function') {
@@ -1095,7 +1168,6 @@ async function getVersionHistory() {
   return {};
 }
 
-// 保存版本历史记录
 async function saveVersionHistory(history) {
   if (window.gpcl && typeof window.gpcl.writeJsonFile === 'function') {
     try {
@@ -1106,7 +1178,6 @@ async function saveVersionHistory(history) {
   }
 }
 
-// 记录版本启动时间
 async function recordVersionLaunch(versionId) {
   try {
     const history = await getVersionHistory();
@@ -1120,7 +1191,6 @@ async function recordVersionLaunch(versionId) {
   }
 }
 
-// 记录版本下载成功时间
 async function recordVersionDownload(versionId) {
   try {
     const history = await getVersionHistory();
@@ -1128,14 +1198,13 @@ async function recordVersionDownload(versionId) {
       history[versionId] = {};
     }
     history[versionId].downloadTime = Date.now();
-    history[versionId].lastLaunch = Date.now(); // 下载成功也作为最后启动时间
+    history[versionId].lastLaunch = Date.now(); 
     await saveVersionHistory(history);
   } catch (e) {
     console.error('记录版本下载时间失败:', e);
   }
 }
 
-// 渲染版本选择列表
 async function renderVersionSelectList() {
   const container = document.getElementById('launch-version-list');
   const countEl = document.getElementById('version-count');
@@ -1144,8 +1213,7 @@ async function renderVersionSelectList() {
   
   try {
     let versions = [];
-    
-    // 尝试调用主进程API
+
     if (window.gpcl && typeof window.gpcl.scanVersions === 'function') {
       try {
         versions = await window.gpcl.scanVersions(null, true);
@@ -1161,8 +1229,7 @@ async function renderVersionSelectList() {
       countEl.textContent = '0 个版本';
       return;
     }
-    
-    // 按最后启动时间排序，最近启动的排在前面
+
     versions.sort((a, b) => {
       const timeA = history[a]?.lastLaunch || history[a]?.downloadTime || 0;
       const timeB = history[b]?.lastLaunch || history[b]?.downloadTime || 0;
@@ -1175,12 +1242,10 @@ async function renderVersionSelectList() {
       const item = document.createElement('div');
       item.className = 'version-item';
       item.dataset.versionId = versionId;
-      
-      // 获取版本类型图标
+
       const icon = index === 0 && (history[versionId]?.lastLaunch || history[versionId]?.downloadTime) 
         ? '⭐' : '📦';
-      
-      // 格式化时间
+
       const lastTime = history[versionId]?.lastLaunch || history[versionId]?.downloadTime;
       let timeText = '';
       if (lastTime) {
@@ -1213,8 +1278,7 @@ async function renderVersionSelectList() {
     });
     
     countEl.textContent = `${versions.length} 个版本`;
-    
-    // 如果没有选中的版本，自动选中第一个
+
     if (!selectedVersionId && versions.length > 0) {
       selectVersion(versions[0]);
     }
@@ -1224,11 +1288,9 @@ async function renderVersionSelectList() {
   }
 }
 
-// 选择版本
 function selectVersion(versionId) {
   selectedVersionId = versionId;
 
-  // 更新UI
   const items = document.querySelectorAll('.version-item');
   items.forEach(item => {
     item.classList.toggle('selected', item.dataset.versionId === versionId);
@@ -1242,7 +1304,6 @@ function selectVersion(versionId) {
     infoEl.classList.remove('hidden');
   }
 
-  // 更新启动按钮下方的小字显示
   const displayEl = document.getElementById('selected-version-display');
   const textEl = document.getElementById('selected-version-text');
   if (displayEl && textEl) {
@@ -1250,11 +1311,9 @@ function selectVersion(versionId) {
     displayEl.classList.remove('hidden');
   }
 
-  // 更新启动按钮状态
   updateLaunchButtonState(true);
 }
 
-// 检查版本是否已安装
 async function isVersionInstalled(versionId) {
   try {
     const versions = await window.gpcl.scanVersions(null, true);
@@ -1267,36 +1326,31 @@ async function isVersionInstalled(versionId) {
 let allVersions = [];
 let selectedVersionId = null;
 
-// 模组加载器相关状态
 let modLoaderState = {
   forge: { available: false, versions: [], selected: null, expanded: false },
   fabric: { available: false, versions: [], selected: null, expanded: false },
   optifine: { available: false, versions: [], selected: null, expanded: false }
 };
 
-// 模组加载器兼容性规则
 const MOD_LOADER_COMPATIBILITY = {
-  // Forge 和 Fabric 互斥
+  
   forge: ['fabric'],
   fabric: ['forge'],
-  // OptiFine 与 Forge/Fabric 都互斥
+  
   optifine: ['forge', 'fabric']
 };
 
-// 检测 Forge 可用性
 async function checkForgeAvailability(mcVersion) {
   try {
-    // Forge 支持 1.1 及以上版本
+    
     const parts = mcVersion.split('.');
     const major = parseInt(parts[0], 10) || 1;
     const minor = parseInt(parts[1], 10) || 0;
-    
-    // 1.1 以下不支持
+
     if (major === 1 && minor < 1) {
       return { available: false, versions: [] };
     }
-    
-    // 从主进程获取 Forge 版本列表
+
     const result = await window.gpcl.getForgeVersions(mcVersion);
     if (result.success) {
       return { available: result.versions.length > 0, versions: result.versions };
@@ -1308,22 +1362,18 @@ async function checkForgeAvailability(mcVersion) {
   }
 }
 
-// 检测所有模组加载器的可用性
 async function checkAllModLoaders(mcVersion) {
-  // 重置状态
+  
   modLoaderState = {
     forge: { available: false, versions: [], selected: null, expanded: false }
   };
-  
-  // 检测 Forge
+
   const forgeResult = await checkForgeAvailability(mcVersion);
   modLoaderState.forge = { ...modLoaderState.forge, ...forgeResult };
-  
-  // 更新 UI
+
   updateModLoaderUI();
 }
 
-// 更新模组加载器 UI
 function updateModLoaderUI() {
   const loaders = ['forge'];
   
@@ -1337,8 +1387,7 @@ function updateModLoaderUI() {
     const error = document.getElementById(`${loader}-error`);
     
     if (!card || !badge) return;
-    
-    // 更新徽章状态
+
     if (state.available) {
       badge.textContent = '可用';
       badge.className = 'detail-option-badge available';
@@ -1348,15 +1397,13 @@ function updateModLoaderUI() {
       badge.className = 'detail-option-badge unavailable';
       card.classList.add('not-available');
     }
-    
-    // 更新内容区域（仅在已展开时显示）
+
     if (state.expanded && state.available) {
       content.classList.remove('hidden');
       loading.classList.add('hidden');
       error.classList.add('hidden');
       versionsContainer.classList.remove('hidden');
-      
-      // 渲染版本列表
+
       renderModLoaderVersionList(loader, state.versions);
     } else if (state.expanded && !state.available) {
       content.classList.remove('hidden');
@@ -1369,7 +1416,6 @@ function updateModLoaderUI() {
   });
 }
 
-// 渲染模组加载器版本列表
 function renderModLoaderVersionList(loader, versions) {
   const container = document.getElementById(`${loader}-versions`);
   if (!container) return;
@@ -1381,8 +1427,7 @@ function renderModLoaderVersionList(loader, versions) {
     item.className = 'detail-option-version-item';
     item.dataset.versionId = version.id;
     item.dataset.version = version.version;
-    
-    // 如果是已选中的版本，添加选中样式
+
     if (modLoaderState[loader].selected === version.version) {
       item.classList.add('selected');
     }
@@ -1398,18 +1443,15 @@ function renderModLoaderVersionList(loader, versions) {
   });
 }
 
-// 选择模组加载器版本
 function selectModLoaderVersion(loader, version, versionId) {
   const state = modLoaderState[loader];
-  
-  // 如果点击的是已选中的版本，则取消选择
+
   if (state.selected === version) {
     state.selected = null;
   } else {
     state.selected = version;
   }
-  
-  // 更新版本列表 UI
+
   const container = document.getElementById(`${loader}-versions`);
   if (container) {
     const items = container.querySelectorAll('.detail-option-version-item');
@@ -1419,12 +1461,10 @@ function selectModLoaderVersion(loader, version, versionId) {
   }
 }
 
-// 更新互斥 UI
 function updateIncompatibilityUI() {
-  // 目前只有 Forge，无需处理互斥
+  
 }
 
-// 获取加载器显示名称
 function getLoaderDisplayName(loader) {
   const names = {
     forge: 'Forge'
@@ -1432,7 +1472,6 @@ function getLoaderDisplayName(loader) {
   return names[loader] || loader;
 }
 
-// 切换模组加载器展开/折叠
 function toggleModLoader(loader) {
   const state = modLoaderState[loader];
   const card = document.getElementById(`${loader}-option`);
@@ -1440,8 +1479,7 @@ function toggleModLoader(loader) {
   const arrow = card?.querySelector('.detail-option-arrow');
   
   if (!content) return;
-  
-  // 如果不可用，不允许展开
+
   if (!state.available) return;
   
   state.expanded = !state.expanded;
@@ -1451,12 +1489,10 @@ function toggleModLoader(loader) {
   } else {
     if (arrow) arrow.classList.remove('expanded');
   }
-  
-  // 重新更新整个 UI
+
   updateModLoaderUI();
 }
 
-// 绑定模组加载器事件
 function bindModLoaderEvents() {
   const loaders = ['forge'];
   
@@ -1471,13 +1507,11 @@ function bindModLoaderEvents() {
   });
 }
 
-// 重置模组加载器状态
 function resetModLoaderState() {
   modLoaderState = {
     forge: { available: false, versions: [], selected: null, expanded: false }
   };
-  
-  // 重置 UI
+
   const loaders = ['forge'];
   loaders.forEach(loader => {
     const card = document.getElementById(`${loader}-option`);
@@ -1586,7 +1620,6 @@ function showVersionDetail(version) {
   if (versionListSection) versionListSection.classList.add('hidden');
   if (versionDetailPage) versionDetailPage.classList.remove('hidden');
 
-  // 重置下载按钮状态，确保它是可用的
   if (detailDownloadBtn) detailDownloadBtn.disabled = false;
 
   const idEl = document.getElementById('detail-version-id');
@@ -1598,8 +1631,7 @@ function showVersionDetail(version) {
   if (typeEl) typeEl.textContent = getCategoryLabel(version.type);
   if (typeLabelEl) typeLabelEl.textContent = `${getCategoryIcon(version.type)} ${getCategoryLabel(version.type)}`;
   if (timeEl) timeEl.textContent = formatDate(version.releaseTime) || '未知';
-  
-  // 重置并检测模组加载器可用性
+
   resetModLoaderState();
   checkAllModLoaders(version.id);
 }
@@ -1619,8 +1651,7 @@ async function loadRemoteVersions() {
     }
     
     let versions = [];
-    
-    // 尝试调用主进程API
+
     if (window.gpcl && typeof window.gpcl.getVersionManifest === 'function') {
       try {
         versions = await window.gpcl.getVersionManifest();
@@ -1628,8 +1659,7 @@ async function loadRemoteVersions() {
         console.error('调用getVersionManifest失败:', e);
       }
     }
-    
-    // 尝试从文件缓存获取
+
     if (!versions || versions.length === 0) {
       try {
         if (window.gpcl && typeof window.gpcl.readJsonFile === 'function') {
@@ -1642,8 +1672,7 @@ async function loadRemoteVersions() {
         console.error('从文件缓存获取远程版本列表失败:', e);
       }
     }
-    
-    // 如果还是没有数据，显示错误或示例数据
+
     if (!versions || versions.length === 0) {
       setStatus('无法获取远程版本列表', 'error');
       if (versionListContainer) {
@@ -1653,14 +1682,12 @@ async function loadRemoteVersions() {
       return;
     }
 
-    // Group versions by type
     const versionMap = {};
     versions.forEach(v => {
       if (!versionMap[v.type]) versionMap[v.type] = [];
       versionMap[v.type].push(v);
     });
 
-    // 保存到文件缓存
     try {
       if (window.gpcl && typeof window.gpcl.writeJsonFile === 'function') {
         await window.gpcl.writeJsonFile('cache', 'remote_versions.json', versions);
@@ -1683,30 +1710,27 @@ async function loadRemoteVersions() {
 }
 
 async function launchGame() {
-  // 检查按钮模式
+  
   const launchBtn = document.getElementById('launch-btn');
   const mode = launchBtn?.dataset.mode || 'launch';
   
   if (mode === 'download') {
-    // 下载模式：跳转到下载页面
+    
     showPage('download');
     setStatus('请选择要下载的游戏版本');
     return;
   }
-  
-  // 启动模式：正常启动游戏
+
   setStatus('[动画] launchGame 函数被调用了');
   const username = usernameInput.value.trim() || 'GPCL_Player';
-  
-  // 使用右侧面板选择的版本
+
   const versionId = selectedVersionId;
 
   if (!versionId) {
     setStatus('请先选择已安装的版本', 'error');
     return;
   }
-  
-  // 记录版本启动时间（不管是否成功都会记录）
+
   await recordVersionLaunch(versionId);
 
   if (window.gpcl && window.gpcl.savePlayerName) {
@@ -1714,16 +1738,14 @@ async function launchGame() {
   }
 
   launchBtn.disabled = true;
-  
-  // 显示启动动画层
+
   showLaunchAnimation(versionId);
 
   try {
-    // 尝试启动游戏（主进程会自动处理Java下载）
+    
     const gameDir = await initGameDir();
     setStatus('[动画] 开始启动游戏');
-    
-    // 获取窗口模式设置
+
     const settings = await loadSettings();
     let windowMode = settings.game?.windowMode || 'windowed';
     let welcomeAnimPlaying = false;
@@ -1741,8 +1763,7 @@ async function launchGame() {
       await window.gpcl.playStartupAnimation();
       setStatus('[启动动画] 动画播放完毕，正在启动游戏...');
     }
-    
-    // 确保游戏窗口创建事件监听器已设置
+
     setupGameWindowListener();
     
     const result = await window.gpcl.launch({
@@ -1758,8 +1779,7 @@ async function launchGame() {
       if (welcomeAnimPlaying && window.gpcl && window.gpcl.dismissStartupAnimation) {
         window.gpcl.dismissStartupAnimation();
       }
-      
-      // 显示成功动画后隐藏
+
       showLaunchSuccess();
       
       setTimeout(() => {
@@ -1769,7 +1789,7 @@ async function launchGame() {
       setStatus(`游戏已启动！PID: ${result.pid}`, 'success');
       showToast('游戏已启动', `Minecraft ${versionId} (${username})`, 'success', 'game-started');
     } else if (result.cancelled) {
-      // 用户取消了启动
+      
       if (welcomeAnimPlaying && window.gpcl && window.gpcl.dismissStartupAnimation) {
         window.gpcl.dismissStartupAnimation();
       }
@@ -1796,7 +1816,6 @@ async function launchGame() {
   }
 }
 
-// 显示启动动画
 async function showLaunchAnimation(versionId) {
   try {
     const overlay = document.getElementById('launch-animation-overlay');
@@ -1818,8 +1837,7 @@ async function showLaunchAnimation(versionId) {
     if (statusText) {
       statusText.textContent = '正在启动游戏...';
     }
-    
-    // 获取启动显示名称（不包含 OptiFine）
+
     let displayName = versionId;
     if (window.gpcl && typeof window.gpcl.getLaunchDisplayName === 'function') {
       try {
@@ -1844,7 +1862,6 @@ async function showLaunchAnimation(versionId) {
   }
 }
 
-// 小知识列表
 const launchTips = [
   'Minecraft 最初由 Markus "Notch" Persson 于 2009 年独立开发，最初版本仅用 6 天完成。',
   'Minecraft 的苦力怕（Creeper）是 Notch 在尝试制作猪模型时，因搞错长宽比而意外诞生的。',
@@ -1879,7 +1896,6 @@ const launchTips = [
   'GPCL 是云云一个人开发的启动器，并没有什么所谓的开发团队。',
 ];
 
-// 显示随机小知识
 function showRandomTip() {
   const tipText = document.getElementById('launch-tip-text');
   if (!tipText) return;
@@ -1888,7 +1904,6 @@ function showRandomTip() {
   tipText.textContent = launchTips[randomIndex];
 }
 
-// 模拟启动进度
 function simulateLaunchProgress() {
   const progressFill = document.getElementById('launch-progress-fill');
   const statusText = document.getElementById('launch-status-text');
@@ -1902,7 +1917,7 @@ function simulateLaunchProgress() {
   ];
   
   const interval = setInterval(() => {
-    // 随机增加进度
+    
     progress += Math.random() * 15 + 5;
     
     if (progress >= 90) {
@@ -1912,29 +1927,25 @@ function simulateLaunchProgress() {
     if (progressFill) {
       progressFill.style.width = `${progress}%`;
     }
-    
-    // 更新状态文字
+
     const messageIndex = Math.floor(progress / 25);
     if (statusText && messageIndex < statusMessages.length) {
       statusText.textContent = statusMessages[messageIndex];
     }
   }, 200);
-  
-  // 保存interval ID以便清除
+
   window.launchProgressInterval = interval;
 }
 
-// 游戏窗口创建监听器设置
 let gameWindowResolve = null;
 let gameWindowTimeout = null;
 
 function setupGameWindowListener() {
-  // 移除旧的监听器避免重复
+  
   if (window.gpcl && window.gpcl.removeAllListeners) {
     window.gpcl.removeAllListeners();
   }
-  
-  // 重新注册关闭确认监听器
+
   if (window.gpcl && window.gpcl.onConfirmCloseWhileDownloading) {
     window.gpcl.onConfirmCloseWhileDownloading(async () => {
       const result = await showDialog({
@@ -1954,8 +1965,7 @@ function setupGameWindowListener() {
       }
     });
   }
-  
-  // 注册游戏窗口创建监听器
+
   if (window.gpcl && window.gpcl.onGameWindowCreated) {
     window.gpcl.onGameWindowCreated((data) => {
       setStatus('[动画] 收到游戏窗口创建事件');
@@ -1970,7 +1980,6 @@ function setupGameWindowListener() {
   }
 }
 
-// 等待游戏窗口创建成功
 function waitForGameWindow() {
   return new Promise((resolve) => {
     gameWindowResolve = resolve;
@@ -1980,11 +1989,10 @@ function waitForGameWindow() {
       gameWindowResolve = null;
       gameWindowTimeout = null;
       resolve();
-    }, 10000); // 10秒超时
+    }, 10000); 
   });
 }
 
-// 显示成功动画
 function showLaunchSuccess() {
   try {
     const overlay = document.getElementById('launch-animation-overlay');
@@ -1999,34 +2007,28 @@ function showLaunchSuccess() {
     if (block) {
       block.classList.add('breaking');
     }
-    
-    // 创建粒子效果
+
     createParticles();
   } catch (err) {
     setStatus('[动画] 显示成功动画失败: ' + err.message, 'error');
   }
 }
 
-// 创建粒子效果
 function createParticles() {
   const particlesContainer = document.getElementById('particles');
   if (!particlesContainer) return;
-  
-  // 清除现有粒子
+
   particlesContainer.innerHTML = '';
-  
-  // 创建多个粒子
+
   for (let i = 0; i < 12; i++) {
     const particle = document.createElement('div');
     particle.className = 'particle';
-    
-    // 随机方向
+
     const angle = (Math.PI * 2 * i) / 12;
     const distance = 50 + Math.random() * 50;
     particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
     particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
-    
-    // 随机大小和延迟
+
     particle.style.width = `${4 + Math.random() * 8}px`;
     particle.style.height = particle.style.width;
     particle.style.animationDelay = `${Math.random() * 0.2}s`;
@@ -2035,7 +2037,6 @@ function createParticles() {
   }
 }
 
-// 隐藏启动动画
 function hideLaunchAnimation() {
   try {
     const overlay = document.getElementById('launch-animation-overlay');
@@ -2051,8 +2052,7 @@ function hideLaunchAnimation() {
         setStatus('[动画] 启动动画层已隐藏');
       }, 400);
     }
-    
-    // 清除进度interval
+
     if (window.launchProgressInterval) {
       clearInterval(window.launchProgressInterval);
       window.launchProgressInterval = null;
@@ -2065,10 +2065,8 @@ function hideLaunchAnimation() {
 async function startDownload(versionId) {
   if (!versionId) { setStatus('请先选择要下载的版本', 'error'); return; }
 
-  // 检查版本是否已安装
   const installed = await isVersionInstalled(versionId);
-  
-  // 检查是否选择了模组加载器
+
   let selectedModLoader = null;
   let selectedModLoaderVersion = null;
   let modLoaderName = '';
@@ -2088,11 +2086,10 @@ async function startDownload(versionId) {
   resetChart();
 
   if (downloadPanel) downloadPanel.classList.remove('hidden');
-  // 从详情页回到列表页，显示下载监控
+  
   hideVersionDetail();
   showPage('download');
 
-  // 滚动到下载页面顶部
   const scrollContainer = document.querySelector('.main-content');
   if (scrollContainer) {
     scrollContainer.scrollTop = 0;
@@ -2102,7 +2099,6 @@ async function startDownload(versionId) {
   const filenameEl = document.getElementById('download-filename');
   const cancelBtn = document.getElementById('cancel-download-btn');
 
-  // 重置按钮状态
   if (cancelBtn) {
     cancelBtn.textContent = '取消下载';
     cancelBtn.classList.remove('complete');
@@ -2118,8 +2114,7 @@ async function startDownload(versionId) {
   if (filenameEl) filenameEl.textContent = `正在下载: ${displayName}`;
 
   window.gpcl.removeAllListeners();
-  
-  // 重新注册关闭确认监听器（不会被removeAllListeners移除）
+
   window.gpcl.onConfirmCloseWhileDownloading(async () => {
     const result = await showDialog({
       type: 'confirm',
@@ -2200,7 +2195,7 @@ async function startDownload(versionId) {
     let result;
     
     if (selectedModLoader) {
-      // 下载带模组加载器的版本
+      
       result = await window.gpcl.downloadWithModLoader(
         versionId, 
         selectedModLoader, 
@@ -2208,12 +2203,12 @@ async function startDownload(versionId) {
         maxConcurrent
       );
     } else {
-      // 下载原版
+      
       result = await window.gpcl.downloadVersion(versionId, maxConcurrent);
     }
     
     if (result.success) {
-      // 记录版本下载时间
+      
       await recordVersionDownload(result.finalVersionId || versionId);
       
       const finalDisplayName = selectedModLoader 
@@ -2228,9 +2223,9 @@ async function startDownload(versionId) {
       if (progressTextEl) progressTextEl.textContent = '100%';
       showToast('下载完成', `${finalDisplayName} 已准备就绪`, 'success', 'download-complete');
       await loadVersions();
-      // 刷新版本选择列表
+      
       renderVersionSelectList();
-      // 修改按钮状态为下载完成（绿色）
+      
       if (cancelBtn) {
         cancelBtn.textContent = '下载完成';
         cancelBtn.classList.add('complete');
@@ -2249,7 +2244,6 @@ async function startDownload(versionId) {
   if (detailDownloadBtn) detailDownloadBtn.disabled = false;
 }
 
-// 详情页面事件
 if (detailBackBtn) {
   detailBackBtn.addEventListener('click', hideVersionDetail);
 }
@@ -2290,30 +2284,25 @@ launchBtn.addEventListener('click', launchGame);
   await loadVersions();
   await loadRemoteVersions();
 
-  // 初始化版本选择列表并自动选中最近启动的版本
   await renderVersionSelectList();
 
-  // 初始化Java版本状态
   await initJavaVersionStatus();
   bindJavaInstallButtons();
-  
-  // 绑定模组加载器事件
+
   bindModLoaderEvents();
 
   setInterval(async () => {
-    // 刷新游戏版本（使用静默模式，不写日志）
+    
     if (currentPage === 'launch') {
       await loadVersions(true);
       await renderVersionSelectList();
     }
-    
-    // 刷新Java版本状态（在所有页面都刷新）
+
     if (currentPage === 'download') {
       await refreshJavaStatus();
     }
   }, 2000);
 
-  // 刷新Java版本状态的函数
   async function refreshJavaStatus() {
     const javaVersions = ["8", "17", "21", "25"];
     
@@ -2359,17 +2348,15 @@ launchBtn.addEventListener('click', launchGame);
     updateJavaInstallStatus();
   }
 
-  // bind refresh button
   const refreshBtn = document.getElementById('refresh-btn-page');
   if (refreshBtn) refreshBtn.addEventListener('click', async () => {
     setStatus('重试加载远程版本...');
     await loadRemoteVersions();
-    // 同时刷新Java状态
+    
     await refreshJavaStatus();
     setStatus('准备就绪');
   });
 
-  // bind cancel download button
   if (cancelDownloadBtn) cancelDownloadBtn.addEventListener('click', async () => {
     const result = await showDialog({
       type: 'confirm',
@@ -2388,15 +2375,13 @@ launchBtn.addEventListener('click', launchGame);
   });
 
   setStatus('准备就绪');
-  
-  // 启动器加载完成后自动前置窗口
+
   if (window.gpcl && window.gpcl.focusWindow) {
     setTimeout(() => {
       window.gpcl.focusWindow();
     }, 100);
   }
-  
-  // 绑定启动取消按钮
+
   const launchCancelBtn = document.getElementById('launch-cancel-btn');
   if (launchCancelBtn) {
     launchCancelBtn.addEventListener('click', () => {
@@ -2407,11 +2392,9 @@ launchBtn.addEventListener('click', launchGame);
       hideLaunchAnimation();
     });
   }
-  
-  // 静默检查更新
+
   checkForUpdates(true);
-  
-  // 绑定检查更新按钮
+
   const checkUpdateBtn = document.getElementById('check-update-btn');
   if (checkUpdateBtn) {
     checkUpdateBtn.addEventListener('click', async () => {
@@ -2454,44 +2437,36 @@ launchBtn.addEventListener('click', launchGame);
       checkUpdateBtn.disabled = false;
     });
   }
-  
-  // 绑定立即前往下载按钮
+
   const goDownloadBtn = document.getElementById('go-download-btn');
-  
-  // 绑定自动检查更新开关
+
   const autoCheckUpdate = document.getElementById('auto-check-update');
-  
-  // 绑定防止多次启动开关
+
   const preventMultipleLaunch = document.getElementById('prevent-multiple-launch');
-  
-  // 绑定自动清除日志开关
+
   const autoClearLogs = document.getElementById('auto-clear-logs');
   const logRetentionContainer = document.getElementById('log-retention-container');
   const logRetentionValue = document.getElementById('log-retention-value');
   const logRetentionUnit = document.getElementById('log-retention-unit');
-  
-  // 初始化版本显示
+
   const aboutVersion = document.getElementById('about-version');
   
   const customMirrorContainer = document.getElementById('custom-java-mirror-container');
   const customMirrorUrl = document.getElementById('custom-java-mirror-url');
-  
-  // 游戏内存
+
   initCustomSelect('settings-memory', async (value) => {
     const settings = await loadSettings();
     settings.game.memory = value;
     await gpcl.saveSettings(settings);
   });
-  
-  // 窗口模式
+
   initCustomSelect('settings-window-mode', async (value) => {
     const settings = await loadSettings();
     if (!settings.game) settings.game = {};
     settings.game.windowMode = value;
     await gpcl.saveSettings(settings);
   });
-  
-  // 主题模式
+
   initCustomSelect('settings-theme', async (value) => {
     const settings = await loadSettings();
     if (!settings.appearance) settings.appearance = {};
@@ -2499,8 +2474,7 @@ launchBtn.addEventListener('click', launchGame);
     await gpcl.saveSettings(settings);
     applyTheme(value);
   });
-  
-  // 界面缩放
+
   initCustomSelect('settings-scale', async (value) => {
     const settings = await loadSettings();
     if (!settings.appearance) settings.appearance = {};
@@ -2508,18 +2482,16 @@ launchBtn.addEventListener('click', launchGame);
     await gpcl.saveSettings(settings);
     applyScale(value);
   });
-  
-  // Java镜像源
+
   initCustomSelect('java-mirror-select', async (value) => {
     if (customMirrorContainer) {
       customMirrorContainer.classList.toggle('hidden', value !== 'custom');
     }
     await saveJavaMirrorSettings(value, customMirrorUrl?.value || '');
   });
-  
-  // 日志保留时间单位
+
   initCustomSelect('log-retention-unit', async (unit) => {
-    // 根据单位限制当前值
+    
     const maxValues = {
       hour: 23,
       day: 30,
@@ -2543,8 +2515,7 @@ launchBtn.addEventListener('click', launchGame);
     }
     await gpcl.saveSettings(settings);
   });
-  
-  // 绑定立即前往下载按钮
+
   if (goDownloadBtn) {
     goDownloadBtn.addEventListener('click', () => {
       if (window.gpcl && window.gpcl.openExternal) {
@@ -2552,10 +2523,9 @@ launchBtn.addEventListener('click', launchGame);
       }
     });
   }
-  
-  // 绑定自动检查更新开关
+
   if (autoCheckUpdate) {
-    // 从设置中加载状态
+    
     (async () => {
       const settings = await loadSettings();
       autoCheckUpdate.checked = settings.advanced?.autoCheckUpdate !== false;
@@ -2569,7 +2539,6 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  // 绑定防止多次启动开关
   if (preventMultipleLaunch) {
     (async () => {
       const settings = await loadSettings();
@@ -2621,16 +2590,38 @@ launchBtn.addEventListener('click', launchGame);
     })();
 
     developerMode.addEventListener('change', async () => {
-      const settings = await loadSettings();
-      settings.advanced.developerMode = developerMode.checked;
-      await gpcl.saveSettings(settings);
-      if (window.gpcl && window.gpcl.setDeveloperMode) {
-        await window.gpcl.setDeveloperMode(developerMode.checked);
+      if (developerMode.checked) {
+        const confirmed = await showDialog({
+          type: 'confirm',
+          title: '确认开启开发者模式',
+          message: '确认要开启吗？开启后需要重启 GPCL 才能生效。开启开发者模式后将允许打开 DevTools、右键菜单及刷新页面。'
+        });
+        
+        if (confirmed) {
+          const settings = await loadSettings();
+          settings.advanced.developerMode = true;
+          await gpcl.saveSettings(settings);
+          
+          if (window.gpcl && window.gpcl.restartApp) {
+            await window.gpcl.restartApp();
+          } else {
+            showToast('重启失败', '无法自动重启，请手动重启应用', 'error');
+            developerMode.checked = false;
+          }
+        } else {
+          developerMode.checked = false;
+        }
+      } else {
+        const settings = await loadSettings();
+        settings.advanced.developerMode = false;
+        await gpcl.saveSettings(settings);
+        if (window.gpcl && window.gpcl.setDeveloperMode) {
+          await window.gpcl.setDeveloperMode(false);
+        }
       }
     });
   }
 
-  // 绑定自动清除日志开关
   if (autoClearLogs) {
     (async () => {
       const settings = await loadSettings();
@@ -2648,7 +2639,6 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  // 绑定保留日志时间输入
   if (logRetentionValue) {
     (async () => {
       const settings = await loadSettings();
@@ -2658,8 +2648,7 @@ launchBtn.addEventListener('click', launchGame);
     logRetentionValue.addEventListener('change', async () => {
       let value = parseInt(logRetentionValue.value, 10);
       const unit = getCustomSelectValue('log-retention-unit') || 'day';
-      
-      // 根据单位限制最大值
+
       const maxValues = {
         hour: 23,
         day: 30,
@@ -2681,31 +2670,25 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  // 初始化版本显示
   if (aboutVersion) {
     const version = await getCurrentVersion();
     aboutVersion.textContent = `版本: ${version}`;
   }
-  
 
-  
-  // 绑定Java镜像URL输入
   if (customMirrorUrl) {
     customMirrorUrl.addEventListener('input', async () => {
       await saveJavaMirrorSettings(getCustomSelectValue('java-mirror-select') || 'tsinghua', customMirrorUrl.value);
     });
   }
-  
-  // 加载所有设置到界面
+
   (async () => {
     const settings = await loadSettings();
-    
-    // 游戏内存
-    let memoryValue = '2'; // 默认2GB
+
+    let memoryValue = '2'; 
     if (settings.game?.memory) {
       const storedMemory = String(settings.game.memory);
       if (storedMemory.includes('096')) {
-        // 旧格式，转换为GB
+        
         const mb = parseInt(storedMemory);
         if (!isNaN(mb)) {
           memoryValue = String(mb / 1024);
@@ -2715,33 +2698,27 @@ launchBtn.addEventListener('click', launchGame);
       }
     }
     setCustomSelectValue('settings-memory', memoryValue);
-    
-    // 窗口模式
+
     setCustomSelectValue('settings-window-mode', settings.game?.windowMode || 'windowed');
-    
-    // 主题
+
     const theme = settings.appearance?.theme || 'dark';
     setCustomSelectValue('settings-theme', theme);
     applyTheme(theme);
-    
-    // 缩放
+
     const scale = settings.appearance?.scale || '100';
     setCustomSelectValue('settings-scale', scale);
     applyScale(scale);
-    
-    // 播放启动动画
+
     const playStartupAnimSync = document.getElementById('play-startup-animation');
     if (playStartupAnimSync) {
       playStartupAnimSync.checked = settings.appearance?.playStartupAnimation === true;
     }
-    
-    // 不渲染Splash
+
     const skipSplashSync = document.getElementById('skip-splash');
     if (skipSplashSync) {
       skipSplashSync.checked = settings.appearance?.skipSplash === true;
     }
-    
-    // Java镜像
+
     const javaMirror = settings.download?.javaMirror || 'tsinghua';
     setCustomSelectValue('java-mirror-select', javaMirror);
     if (customMirrorContainer) {
@@ -2750,21 +2727,19 @@ launchBtn.addEventListener('click', launchGame);
     if (customMirrorUrl && settings.download?.customJavaMirror) {
       customMirrorUrl.value = settings.download.customJavaMirror;
     }
-    
-    // 日志保留时间单位
+
     setCustomSelectValue('log-retention-unit', settings.advanced?.logRetentionUnit || 'day');
   })();
-  
-  // 绑定兼容性设置
+
   (async () => {
     const resetDefaultToggle = document.getElementById('settings-reset-default');
     
     if (resetDefaultToggle) {
-      resetDefaultToggle.checked = false; // 默认关闭
+      resetDefaultToggle.checked = false; 
       
       resetDefaultToggle.addEventListener('change', async function() {
         if (this.checked) {
-          // 显示确认对话框
+          
           const confirmed = await showDialog({
             type: 'confirm',
             title: '恢复默认设置',
@@ -2772,26 +2747,25 @@ launchBtn.addEventListener('click', launchGame);
           });
           
           if (confirmed) {
-            // 恢复默认设置
+            
             if (window.gpcl && window.gpcl.resetSettings) {
               const result = await window.gpcl.resetSettings();
               if (result.success) {
-                // 重启应用
+                
                 if (window.gpcl && window.gpcl.restartApp) {
                   await window.gpcl.restartApp();
                 }
               }
             }
           } else {
-            // 用户取消，重置开关状态
+            
             this.checked = false;
           }
         }
       });
     }
   })();
-  
-  // 绑定设置侧边栏点击事件
+
   const settingsSidebarItems = document.querySelectorAll('.settings-sidebar-item');
   settingsSidebarItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -2801,8 +2775,7 @@ launchBtn.addEventListener('click', launchGame);
       }
     });
   });
-  
-  // 绑定版本设置按钮 - 先声明所有需要的变量
+
   let currentVersionForSettings = null;
   
   const versionSettingsBtn = document.getElementById('version-settings');
@@ -2840,8 +2813,7 @@ launchBtn.addEventListener('click', launchGame);
     }
     return false;
   }
-  
-  // 更新服务器IP输入框的显示状态
+
   function updateServerIpVisibility() {
     const startupMode = getCustomSelectValue('version-startup-mode');
     if (startupMode === 'join') {
@@ -2902,8 +2874,7 @@ launchBtn.addEventListener('click', launchGame);
   
   async function hideVersionSettingsPanel() {
     if (!versionSettingsPanel) return;
-    
-    // 立即保存当前设置（取消延迟保存）
+
     if (saveTimeout) clearTimeout(saveTimeout);
     if (currentVersionForSettings) {
       const settings = {
@@ -2928,7 +2899,7 @@ launchBtn.addEventListener('click', launchGame);
   if (versionSettingsBtn) {
     versionSettingsBtn.addEventListener('click', async () => {
       if (selectedVersionId) {
-        // 如果版本选择面板是打开的，先关闭它
+        
         if (!versionSelectPanel.classList.contains('hidden')) {
           versionSelectPanel.classList.add('hidden');
         }
@@ -2979,8 +2950,7 @@ launchBtn.addEventListener('click', launchGame);
       }
     });
   }
-  
-  // 初始化版本设置下拉框
+
   initCustomSelect('version-memory', () => {
     saveCurrentVersionSettings();
   });
@@ -2993,25 +2963,22 @@ launchBtn.addEventListener('click', launchGame);
     updateServerIpVisibility();
     saveCurrentVersionSettings();
   });
-  
-  // 版本服务器IP输入框
+
   if (versionServerIpInput) {
     versionServerIpInput.addEventListener('input', () => {
       saveCurrentVersionSettings();
     });
   }
-  
-  // 绑定版本选择按钮
+
   const versionSelectBtn = document.getElementById('version-select');
   const versionPanel = document.getElementById('version-select-panel');
   if (versionSelectBtn && versionPanel) {
     versionSelectBtn.addEventListener('click', () => {
-      // 如果版本设置面板是打开的，就不动
+      
       if (!versionSettingsPanel.classList.contains('hidden')) {
         return;
       }
-      
-      // 切换版本面板显示状态
+
       if (versionPanel.classList.contains('hidden')) {
         versionPanel.classList.remove('hidden');
         renderVersionSelectList();
@@ -3020,8 +2987,7 @@ launchBtn.addEventListener('click', launchGame);
       }
     });
   }
-  
-  // 绑定正版登录按钮（显示提示）
+
   const authMicrosoftBtn = document.getElementById('auth-microsoft');
   if (authMicrosoftBtn) {
     authMicrosoftBtn.addEventListener('click', () => {
@@ -3030,7 +2996,6 @@ launchBtn.addEventListener('click', launchGame);
   }
 })();
 
-// 版本更新检查
 let latestVersion = null;
 let latestVersionLog = null;
 let updateAvailable = false;
@@ -3157,32 +3122,43 @@ async function checkForUpdates(silent = false) {
 
 async function updateSettingsBadge() {
   const settingsMenu = document.getElementById('menu-settings');
+  const aboutTab = document.getElementById('settings-tab-about');
   const checkUpdateBtn = document.getElementById('check-update-btn');
-  if (!settingsMenu) return;
-  
-  // 移除旧的红点
-  const oldBadge = settingsMenu.querySelector('.update-badge');
-  if (oldBadge) oldBadge.remove();
-  
-  // 获取设置
+
+  const oldSettingsBadge = settingsMenu?.querySelector('.update-badge');
+  if (oldSettingsBadge) oldSettingsBadge.remove();
+
+  const oldAboutBadge = aboutTab?.querySelector('.update-badge');
+  if (oldAboutBadge) oldAboutBadge.remove();
+
   const settings = await loadSettings();
-  
-  // 只有在有新版本且自动检查更新开启时才显示红点
+
   if (updateAvailable && settings.advanced?.autoCheckUpdate !== false) {
-    const badge = document.createElement('span');
-    badge.className = 'update-badge';
-    badge.textContent = '';
-    badge.style.cssText = 'position:absolute;top:2px;right:2px;width:8px;height:8px;background:#f44336;border-radius:50%;';
-    settingsMenu.style.position = 'relative';
-    settingsMenu.appendChild(badge);
     
-    // 检查更新按钮也标红
+    if (settingsMenu) {
+      const badge = document.createElement('span');
+      badge.className = 'update-badge';
+      badge.textContent = '';
+      badge.style.cssText = 'position:absolute;top:2px;right:2px;width:8px;height:8px;background:#f44336;border-radius:50%;';
+      settingsMenu.style.position = 'relative';
+      settingsMenu.appendChild(badge);
+    }
+
+    if (aboutTab) {
+      const badge = document.createElement('span');
+      badge.className = 'update-badge';
+      badge.textContent = '';
+      badge.style.cssText = 'position:absolute;top:6px;right:8px;width:8px;height:8px;background:#f44336;border-radius:50%;';
+      aboutTab.style.position = 'relative';
+      aboutTab.appendChild(badge);
+    }
+
     if (checkUpdateBtn) {
       checkUpdateBtn.classList.add('new-version');
       checkUpdateBtn.textContent = `发现 ${allNewerVersions.length} 个新版本`;
     }
   } else {
-    // 移除检查更新按钮的红标（如果当前没有更新）
+    
     if (checkUpdateBtn && !updateAvailable) {
       checkUpdateBtn.classList.remove('new-version');
       checkUpdateBtn.textContent = '检查更新';
