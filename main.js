@@ -556,7 +556,6 @@ async function checkJavaInstalled(javaVersion) {
 function getJavaVersionForMCVersion(versionId) {
 
   
-  
   const parts = versionId.split('.');
   let major = parseInt(parts[0], 10);
   let minor = parseInt(parts[1], 10);
@@ -1333,9 +1332,7 @@ async function getJavaRuntimeDownloadInfo(javaVersion) {
 
 function getRecommendedJavaVersion(mcVersion) {
 
-  
 
-  
 
   const parts = mcVersion.split('.');
   let major = parseInt(parts[0], 10);
@@ -1362,7 +1359,6 @@ function getRecommendedJavaVersion(mcVersion) {
     return '17';
   }
 
-  
   if (major >= 26) return '25';
   
   if (major >= 21) return '21';
@@ -1746,7 +1742,7 @@ async function installVersion(versionId, maxConcurrent = 20, downloadPath = null
       const assetPath = path.join(GAME_DIR, 'assets', 'objects', prefix, hash);
       if (!fs.existsSync(assetPath)) {
         toDownload.push({
-          url: `https:
+          url: `https://resources.download.minecraft.net/${prefix}/${hash}`,
           dest: assetPath,
           label: `资源: ${name}`
         });
@@ -1891,7 +1887,6 @@ ipcMain.handle('scan-versions', async (_, gameDir, silent = false) => {
           continue;
         }
 
-        
 
         
         const baseVersionId = entry.name; 
@@ -3071,7 +3066,7 @@ ipcMain.handle('get-forge-versions', async (_, mcVersion) => {
 async function fetchForgeVersions(mcVersion) {
   return new Promise((resolve, reject) => {
     const https = require('https');
-    const url = `https:
+    const url = `https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json`;
     
     https.get(url, { timeout: 10000 }, (res) => {
       let data = '';
@@ -3175,7 +3170,7 @@ async function installForge(mcVersion, forgeVersion) {
 
   const fullForgeVersionId = `${mcVersion}-${forgeVersion}`;
 
-  const forgeJsonUrl = `https:
+  const forgeJsonUrl = `https://maven.minecraftforge.net/net/minecraftforge/forge/${fullForgeVersionId}/forge-${fullForgeVersionId}.json`;
   
   writeLog(`[Forge] 下载版本 JSON: ${forgeJsonUrl}`);
   let forgeJsonData;

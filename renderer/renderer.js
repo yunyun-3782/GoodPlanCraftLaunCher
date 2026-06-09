@@ -650,9 +650,7 @@ function getRecommendedJavaVersionFromMC(mcVersion) {
 
   if (isNaN(major)) major = 1;
 
-  
 
-  
 
   
   if (isNaN(minor)) {
@@ -1060,7 +1058,6 @@ function resetChart() {
   if (progressFillEl) progressFillEl.style.width = '0%';
   if (progressTextEl) progressTextEl.textContent = '0%';
 }
-
 
 
 function setStatus(text, type = 'info') {
