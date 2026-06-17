@@ -173,10 +173,8 @@ A：在启动器登录界面或设置面板中，可以自由切换登录模式�
 ## 致谢
 
 - **作者**：Yunyun（云云）
-- **所属机构**：虚舟实验室（CaelLab）/ CaelLabGameTS
+- 虚舟实验室（CaelLab）/ CaelLabGameTS
 - 感谢所有通过 Issue 和 Pull Request 参与贡献的社区开发者与热心玩家
-- 感谢清华大学开源镜像站提供的 Java 下载加速服务
-
 ---
 
 ## 免责声明
