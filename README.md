@@ -1,4 +1,4 @@
-# GoodPlanCraftLauncher
+# [GoodPlanCraftLauncher](https://gamets.caellab.com/gpcl/)
 
 > 轻量 · 高效 · 开源 —— 一款专为 Windows 平台设计的 Minecraft 启动器
 
