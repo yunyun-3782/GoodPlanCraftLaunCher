@@ -109,7 +109,7 @@ GPCL 的主要界面分为以下几个核心区域：
 
 GPCL 是一个社区驱动的开源项目，我们非常欢迎并感谢所有形式的贡献，包括但不限于以下类型：
 
-- 提交 Bug 报告与功能建议，请前往 [Issues 页面](https://github.com/CaelLab/GoodPlanCraftLauncher/issues) 进行反馈
+- 提交 Bug 报告与功能建议，请前往 [XM UER](https://forum.xmuer.online/) 进行反馈
 - 代码贡献，请 Fork 主仓库并提交 Pull Request，我们会及时进行代码审查与合并
 - 文档完善与翻译，帮助更多用户理解和使用 GPCL
 
