@@ -151,7 +151,7 @@ A：在启动器登录界面或设置面板中，可以自由切换登录模式�
 |------|------|
 | GitHub 主仓库 | [https://github.com/CaelLab/GoodPlanCraftLauncher](https://github.com/CaelLab/GoodPlanCraftLauncher) |
 | GitCaelLab 镜像 | [https://git.caellab.com/GoodPlanCraftLauncher](https://git.caellab.com/GoodPlanCraftLauncher) |
-| 问题与建议反馈 | [Issues 页面](https://github.com/CaelLab/GoodPlanCraftLauncher/issues) |
+| 问题与建议反馈 | [XM UER论坛](https://forum.xmuer.online/) |
 | 许可证文本 | [LICENSE](LICENSE) |
 
 ---
@@ -161,11 +161,6 @@ A：在启动器登录界面或设置面板中，可以自由切换登录模式�
 - **作者**：Yunyun（云云）
 - 虚舟实验室（CaelLab）/ CaelLabGameTS
 - 感谢所有通过 Issue 和 Pull Request 参与贡献的社区开发者与热心玩家
----
-
-## 免责声明
-
-本软件按“原样”提供，不附带任何明示或暗示的担保，包括但不限于对适销性、特定用途适用性及非侵权性的任何保证。使用本软件所产生的任何风险由用户自行承担。在任何情况下，作者及贡献者均不对因使用或无法使用本软件而产生的任何损害（包括但不限于利润损失、数据丢失或其他间接损失）承担责任。
 
 ---
 
