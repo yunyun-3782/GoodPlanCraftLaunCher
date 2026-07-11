@@ -2,7 +2,7 @@
 
 > 轻量 · 高效 · 开源 —— 一款专为 Windows 平台设计的 Minecraft 启动器
 
-[![Version](https://img.shields.io/badge/version-1.4.3-blue.svg)](https://github.com/CaelLab/GoodPlanCraftLauncher/releases)
+[![Version](https://img.shields.io/badge/version-1.4.4-blue.svg)](https://github.com/CaelLab/GoodPlanCraftLauncher/releases)
 [![License](https://img.shields.io/badge/license-CaelLab%20BY--SA%20Code%20License-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2B-lightgrey.svg)](https://www.microsoft.com/windows)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)](https://github.com/CaelLab/GoodPlanCraftLauncher)
@@ -29,7 +29,7 @@
 
 ## 简介
 
-**GoodPlanCraftLauncher**（以下简称 GPCL）是一款轻量级 Minecraft 启动器，由虚舟实验室（CaelLab）开发并维护。项目始于 2026 年 5 月 20 日，经过密集迭代，目前已发布至 v1.4.3 版本。GPCL 致力于为玩家提供简洁、直观且高效的游戏启动体验，在保持功能完整性的同时，将启动器自身的资源占用控制在极低水平。
+**GoodPlanCraftLauncher**（以下简称 GPCL）是一款轻量级 Minecraft 启动器，由虚舟实验室（CaelLab）开发并维护。项目始于 2026 年 5 月 20 日，经过密集迭代，目前已发布至 v1.4.4 版本。GPCL 致力于为玩家提供简洁、直观且高效的游戏启动体验，在保持功能完整性的同时，将启动器自身的资源占用控制在极低水平。
 
 在登录方式上，GPCL 同时支持离线登录与正版登录两种模式，无论您是否拥有正版 Minecraft 账号，都能顺畅进入游戏。在版本管理方面，GPCL 内置了完整的版本自动管理机制，用户只需点击按钮，即可完成游戏版本的下载、安装与切换，启动器会自动解析并处理所有依赖库及资源文件，无需手动干预。
 
@@ -69,7 +69,7 @@
 
 请前往 [GitHub Releases 页面](https://github.com/CaelLab/GoodPlanCraftLauncher/releases) 下载对应版本的最新安装包。
 
-- **最新稳定版本**：v1.4.3
+- **最新稳定版本**：v1.4.4
 - **发布日期**：2026 年 6 月 2 日
 - **支持平台**：Windows 10 / 11 64位
 

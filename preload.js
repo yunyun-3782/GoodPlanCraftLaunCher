@@ -97,6 +97,7 @@ contextBridge.exposeInMainWorld('gpcl', {
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  openFolder: (folderPath) => ipcRenderer.invoke('open-folder', folderPath),
 
   getSettings: () => ipcRenderer.invoke('get-settings'),
 
@@ -128,6 +129,17 @@ contextBridge.exposeInMainWorld('gpcl', {
 
   getMemoryUsage: () => ipcRenderer.invoke('get-memory-usage'),
   optimizeMemory: () => ipcRenderer.invoke('optimize-memory'),
+
+  // 应用内更新系统
+  downloadUpdate: (version) => ipcRenderer.invoke('download-update', version),
+  cancelUpdateDownload: () => ipcRenderer.invoke('cancel-update-download'),
+  verifyUpdateSHA1: (filePath) => ipcRenderer.invoke('verify-update-sha1', filePath),
+  executeUpdateInstaller: (installerPath) => ipcRenderer.invoke('execute-update-installer', installerPath),
+  setUpdateShutdownHook: (installerPath) => ipcRenderer.invoke('set-update-shutdown-hook', installerPath),
+
+  onUpdateDownloadProgress: (callback) => {
+    ipcRenderer.on('update-download-progress', (event, data) => callback(data));
+  },
   
   removeAllListeners: () => {
     ipcRenderer.removeAllListeners('game-log');
@@ -139,6 +151,7 @@ contextBridge.exposeInMainWorld('gpcl', {
     ipcRenderer.removeAllListeners('java-download-completed');
     ipcRenderer.removeAllListeners('java-download-failed');
     ipcRenderer.removeAllListeners('game-window-created');
+    ipcRenderer.removeAllListeners('update-download-progress');
   }
 });
 

@@ -1,6 +1,6 @@
-﻿{
+{
   "name": "gpcl",
-  "version": "1.5.0",
+  "version": "1.4.4",
   "description": "GoodPlanCraftLauncher",
   "main": "main.js",
   "scripts": {
@@ -8,8 +8,7 @@
     "clean": "if (Test-Path build) { Remove-Item -Recurse -Force build }",
     "copy-files": "node scripts/copy.js",
     "copy-static": "node -e \"const p=require('./package.json');console.log(JSON.stringify({name:p.name,version:p.version,main:p.main,type:p.type}))\" > build/app/package.json",
-    "obfuscate": "javascript-obfuscator build/app --config obfuscator.json --exclude node_modules",
-    "build": "npm run copy-files && npm run obfuscate && npm run copy-static && electron-builder --publish=never",
+    "build": "npm run copy-files && npm run copy-static && electron-builder --publish=never",
     "start:dev": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,8 +18,7 @@
   "type": "commonjs",
   "devDependencies": {
     "electron": "^42.1.0",
-    "electron-builder": "^26.8.1",
-    "javascript-obfuscator": "^5.4.3"
+    "electron-builder": "^26.8.1"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",

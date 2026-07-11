@@ -97,6 +97,14 @@
                   
                   <div class="setting-item">
                     <div class="setting-info">
+                      <div class="setting-label">Mod 文件夹</div>
+                      <div class="setting-desc">打开此版本的 mods 文件夹</div>
+                    </div>
+                    <button class="setting-btn" id="version-open-mods-btn">打开</button>
+                  </div>
+                  
+                  <div class="setting-item">
+                    <div class="setting-info">
                       <div class="setting-label">删除版本</div>
                       <div class="setting-desc">删除此版本的全部文件</div>
                     </div>
@@ -267,7 +275,7 @@
                 </div>
               </div>
               <div class="detail-options" id="mod-loader-options">
-                <div class="detail-option-card" id="forge-option" data-loader="forge">
+                <div class="detail-option-card" id="forge-option" data-loader="forge" style="display:none">
                   <div class="detail-option-header">
                     <div class="detail-option-left">
                       <span class="detail-option-icon">⚙️</span>
@@ -288,7 +296,7 @@
                   </div>
                 </div>
 
-                <div class="detail-option-card" id="fabric-option" data-loader="fabric">
+                <div class="detail-option-card" id="fabric-option" data-loader="fabric" style="display:none">
                   <div class="detail-option-header">
                     <div class="detail-option-left">
                       <span class="detail-option-icon">🧵</span>
@@ -778,7 +786,8 @@
                     </div>
                     <button id="check-update-btn" class="check-update-btn">检查更新</button>
                     <div id="update-status" class="update-status"></div>
-                    <button id="go-download-btn" class="go-download-btn hidden">立即前往下载</button>
+                    <button id="go-download-btn" class="go-download-btn hidden">立即下载</button>
+                    <button id="open-website-btn" class="go-download-btn hidden" style="margin-top:6px;background:var(--button-secondary-bg, #444);">打开官网</button>
                     
                     <div class="auto-update-setting">
                       <div class="setting-row">

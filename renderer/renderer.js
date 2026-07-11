@@ -76,6 +76,11 @@ function showDialog(options) {
     if (options.type === 'confirm' || options.buttons) {
       dialogFooterSingle.classList.add('hidden');
       dialogFooterConfirm.classList.remove('hidden');
+      // 支持自定义按钮标签
+      if (dialogBtnYes && options.confirmText) dialogBtnYes.textContent = options.confirmText;
+      else if (dialogBtnYes) dialogBtnYes.textContent = '是';
+      if (dialogBtnCancel && options.cancelText) dialogBtnCancel.textContent = options.cancelText;
+      else if (dialogBtnCancel) dialogBtnCancel.textContent = '否';
     } else {
       dialogFooterSingle.classList.remove('hidden');
       dialogFooterConfirm.classList.add('hidden');
@@ -183,6 +188,7 @@ let peakSpeed = 0;
 const downloadPanel = document.getElementById('download-panel');
 
 let currentPage = 'launch';
+let isUpdateDownloadActive = false;
 
 function getMaxConcurrentFromSettings() {
   return DEFAULT_MAX_THREADS;
@@ -1324,9 +1330,8 @@ let allVersions = [];
 let selectedVersionId = null;
 
 let modLoaderState = {
-  forge: { available: false, versions: [], selected: null, expanded: false },
-  fabric: { available: false, versions: [], selected: null, expanded: false },
-  optifine: { available: false, versions: [], selected: null, expanded: false }
+  forge: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null },
+  optifine: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null }
 };
 
 const MOD_LOADER_COMPATIBILITY = {
@@ -1362,20 +1367,34 @@ async function checkForgeAvailability(mcVersion) {
 async function checkAllModLoaders(mcVersion) {
   
   modLoaderState = {
-    forge: { available: false, versions: [], selected: null, expanded: false }
+    forge: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null },
+    optifine: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null }
   };
 
   const forgeResult = await checkForgeAvailability(mcVersion);
   modLoaderState.forge = { ...modLoaderState.forge, ...forgeResult };
 
+  const optifineResult = await checkOptiFineAvailability(mcVersion);
+  modLoaderState.optifine = { ...modLoaderState.optifine, ...optifineResult };
+
   updateModLoaderUI();
 }
 
+async function checkOptiFineAvailability(mcVersion) {
+  try {
+    const result = await window.gpcl.getOptiFineVersions(mcVersion);
+    if (result.success) {
+      return { available: result.versions.length > 0, versions: result.versions };
+    }
+    return { available: false, versions: [] };
+  } catch (e) {
+    console.error('检测 OptiFine 可用性失败:', e);
+    return { available: false, versions: [] };
+  }
+}
+
 function updateModLoaderUI() {
-  const loaders = ['forge'];
-  
-  loaders.forEach(loader => {
-    const state = modLoaderState[loader];
+  for (const [loader, state] of Object.entries(modLoaderState)) {
     const card = document.getElementById(`${loader}-option`);
     const badge = document.getElementById(`${loader}-badge`);
     const content = document.getElementById(`${loader}-content`);
@@ -1383,7 +1402,7 @@ function updateModLoaderUI() {
     const versionsContainer = document.getElementById(`${loader}-versions`);
     const error = document.getElementById(`${loader}-error`);
     
-    if (!card || !badge) return;
+    if (!card || !badge) continue;
 
     if (state.available) {
       badge.textContent = '可用';
@@ -1400,7 +1419,6 @@ function updateModLoaderUI() {
       loading.classList.add('hidden');
       error.classList.add('hidden');
       versionsContainer.classList.remove('hidden');
-
       renderModLoaderVersionList(loader, state.versions);
     } else if (state.expanded && !state.available) {
       content.classList.remove('hidden');
@@ -1410,7 +1428,7 @@ function updateModLoaderUI() {
     } else {
       content.classList.add('hidden');
     }
-  });
+  }
 }
 
 function renderModLoaderVersionList(loader, versions) {
@@ -1425,7 +1443,7 @@ function renderModLoaderVersionList(loader, versions) {
     item.dataset.versionId = version.id;
     item.dataset.version = version.version;
 
-    if (modLoaderState[loader].selected === version.version) {
+    if (modLoaderState[loader].selectedVersionId === version.id) {
       item.classList.add('selected');
     }
     
@@ -1443,9 +1461,11 @@ function renderModLoaderVersionList(loader, versions) {
 function selectModLoaderVersion(loader, version, versionId) {
   const state = modLoaderState[loader];
 
-  if (state.selected === version) {
+  if (state.selectedVersionId === versionId) {
+    state.selectedVersionId = null;
     state.selected = null;
   } else {
+    state.selectedVersionId = versionId;
     state.selected = version;
   }
 
@@ -1453,7 +1473,7 @@ function selectModLoaderVersion(loader, version, versionId) {
   if (container) {
     const items = container.querySelectorAll('.detail-option-version-item');
     items.forEach(item => {
-      item.classList.toggle('selected', item.dataset.version === state.selected);
+      item.classList.toggle('selected', item.dataset.versionId === state.selectedVersionId);
     });
   }
 }
@@ -1464,7 +1484,9 @@ function updateIncompatibilityUI() {
 
 function getLoaderDisplayName(loader) {
   const names = {
-    forge: 'Forge'
+    forge: 'Forge',
+    fabric: 'Fabric',
+    optifine: 'OptiFine'
   };
   return names[loader] || loader;
 }
@@ -1491,26 +1513,24 @@ function toggleModLoader(loader) {
 }
 
 function bindModLoaderEvents() {
-  const loaders = ['forge'];
-  
-  loaders.forEach(loader => {
+  for (const loader of Object.keys(modLoaderState)) {
     const card = document.getElementById(`${loader}-option`);
-    if (!card) return;
+    if (!card) continue;
     
     const header = card.querySelector('.detail-option-header');
     if (header) {
       header.addEventListener('click', () => toggleModLoader(loader));
     }
-  });
+  }
 }
 
 function resetModLoaderState() {
   modLoaderState = {
-    forge: { available: false, versions: [], selected: null, expanded: false }
+    forge: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null },
+    optifine: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null }
   };
 
-  const loaders = ['forge'];
-  loaders.forEach(loader => {
+  for (const loader of Object.keys(modLoaderState)) {
     const card = document.getElementById(`${loader}-option`);
     const badge = document.getElementById(`${loader}-badge`);
     const content = document.getElementById(`${loader}-content`);
@@ -1531,7 +1551,7 @@ function resetModLoaderState() {
     if (versions) versions.classList.add('hidden');
     if (error) error.classList.add('hidden');
     if (arrow) arrow.classList.remove('expanded');
-  });
+  }
 }
 
 function getCategoryLabel(type) {
@@ -2069,10 +2089,10 @@ async function startDownload(versionId) {
   let modLoaderName = '';
   
   for (const [loader, state] of Object.entries(modLoaderState)) {
-    if (state.selected) {
+    if (state.selectedVersionId) {
       selectedModLoader = loader;
-      selectedModLoaderVersion = state.selected;
-      if (loader === 'forge') modLoaderName = 'Forge';
+      selectedModLoaderVersion = state.selectedVersionId;
+      modLoaderName = getLoaderDisplayName(loader);
       break;
     }
   }
@@ -2355,6 +2375,8 @@ launchBtn.addEventListener('click', launchGame);
   });
 
   if (cancelDownloadBtn) cancelDownloadBtn.addEventListener('click', async () => {
+    if (isUpdateDownloadActive) return; // 更新下载有自己的取消逻辑
+
     const result = await showDialog({
       type: 'confirm',
       title: '确认取消',
@@ -2416,6 +2438,10 @@ launchBtn.addEventListener('click', launchGame);
         if (goDownloadBtn) {
           goDownloadBtn.classList.remove('hidden');
         }
+        const openWebsiteBtn = document.getElementById('open-website-btn');
+        if (openWebsiteBtn) {
+          openWebsiteBtn.classList.remove('hidden');
+        }
       } else {
         checkUpdateBtn.textContent = '已是最新版本';
         checkUpdateBtn.classList.remove('new-version');
@@ -2428,6 +2454,10 @@ launchBtn.addEventListener('click', launchGame);
         
         if (goDownloadBtn) {
           goDownloadBtn.classList.add('hidden');
+        }
+        const openWebsiteBtn2 = document.getElementById('open-website-btn');
+        if (openWebsiteBtn2) {
+          openWebsiteBtn2.classList.add('hidden');
         }
       }
       
@@ -2514,9 +2544,20 @@ launchBtn.addEventListener('click', launchGame);
   });
 
   if (goDownloadBtn) {
-    goDownloadBtn.addEventListener('click', () => {
+    goDownloadBtn.addEventListener('click', async () => {
+      if (updateAvailable && allNewerVersions.length > 0) {
+        showPage('download');
+        const newest = allNewerVersions[allNewerVersions.length - 1];
+        await startUpdateDownload(newest.version);
+      }
+    });
+  }
+
+  const openWebsiteBtn = document.getElementById('open-website-btn');
+  if (openWebsiteBtn) {
+    openWebsiteBtn.addEventListener('click', () => {
       if (window.gpcl && window.gpcl.openExternal) {
-        window.gpcl.openExternal('https://gamets.caellab.com/gpcl/#download');
+        window.gpcl.openExternal('https://gamets.caellab.com/gpcl/');
       }
     });
   }
@@ -2948,6 +2989,19 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
+  const versionOpenModsBtn = document.getElementById('version-open-mods-btn');
+  if (versionOpenModsBtn) {
+    versionOpenModsBtn.addEventListener('click', async () => {
+      if (currentVersionForSettings && window.gpcl && window.gpcl.getGameDir) {
+        const gameDir = await window.gpcl.getGameDir();
+        if (gameDir) {
+          const modsPath = gameDir + '\\versions\\' + currentVersionForSettings + '\\mods';
+          window.gpcl.openFolder(modsPath);
+        }
+      }
+    });
+  }
+
   initCustomSelect('version-memory', () => {
     saveCurrentVersionSettings();
   });
@@ -3116,6 +3170,183 @@ async function checkForUpdates(silent = false) {
     await updateSettingsBadge();
   }
 }
+
+// ===== 应用内更新下载 =====
+
+async function startUpdateDownload(version) {
+  if (!window.gpcl || !window.gpcl.downloadUpdate) {
+    showToast('更新失败', '更新功能不可用', 'error');
+    return;
+  }
+
+  isUpdateDownloadActive = true;
+
+  // 显示下载进度面板（复用已有的下载面板）
+  await loadChartJs();
+  initChart();
+  resetChart();
+
+  const downloadPanel = document.getElementById('download-panel');
+  const filenameEl = document.getElementById('download-filename');
+  const downloadStatusEl = document.getElementById('download-status');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  const cancelBtn = document.getElementById('cancel-download-btn');
+
+  if (downloadPanel) downloadPanel.classList.remove('hidden');
+  if (filenameEl) filenameEl.textContent = `正在下载: GPCL ${version} 安装程序`;
+  if (downloadStatusEl) downloadStatusEl.textContent = `正在下载 GPCL ${version} ...`;
+  if (progressFill) progressFill.style.width = '0%';
+  if (progressText) progressText.textContent = '0%';
+  if (cancelBtn) {
+    cancelBtn.textContent = '取消下载';
+    cancelBtn.classList.remove('complete');
+    cancelBtn.disabled = false;
+  }
+
+  // 监听下载进度
+  if (window.gpcl.onUpdateDownloadProgress) {
+    let lastTime = 0;
+    let lastBytes = 0;
+    let peakSpeed = 0;
+
+    window.gpcl.onUpdateDownloadProgress((data) => {
+      const percent = data.percent || 0;
+      if (progressFill) progressFill.style.width = percent + '%';
+      if (progressText) progressText.textContent = percent.toFixed(1) + '%';
+      if (downloadStatusEl) downloadStatusEl.textContent = `正在下载 GPCL ${version}: ${percent.toFixed(1)}%`;
+
+      // 计算速度并更新曲线（每0.5秒更新一次）
+      const currentSpeedEl = document.getElementById('current-speed');
+      const peakSpeedEl = document.getElementById('peak-speed');
+      if (data.bytesDownloaded && data.totalBytes) {
+        const now = Date.now();
+        if (lastTime > 0 && now > lastTime) {
+          const timeDiff = (now - lastTime) / 1000;
+          if (timeDiff >= 0.5) {
+            const bytesDiff = data.bytesDownloaded - lastBytes;
+            if (bytesDiff >= 0) {
+              const speedBps = Math.max(0, (bytesDiff * 8) / timeDiff / 1000000);
+              if (currentSpeedEl) currentSpeedEl.textContent = speedBps.toFixed(2) + ' Mbps';
+              if (speedBps > peakSpeed) {
+                peakSpeed = speedBps;
+                if (peakSpeedEl) peakSpeedEl.textContent = peakSpeed.toFixed(2) + ' Mbps';
+              }
+              updateChart(speedBps);
+            }
+            lastTime = now;
+            lastBytes = data.bytesDownloaded;
+          }
+        } else {
+          lastTime = now;
+          lastBytes = data.bytesDownloaded;
+        }
+      }
+    });
+  }
+
+  // 设置取消按钮
+  const handleCancel = async () => {
+    if (window.gpcl.cancelUpdateDownload) {
+      await window.gpcl.cancelUpdateDownload();
+    }
+    if (downloadPanel) downloadPanel.classList.add('hidden');
+    if (downloadStatusEl) downloadStatusEl.textContent = '下载已取消';
+    showToast('已取消', '更新下载已取消', 'info');
+    cancelBtn.removeEventListener('click', handleCancel);
+  };
+  if (cancelBtn) {
+    cancelBtn.onclick = handleCancel;
+  }
+
+  try {
+    // 开始下载
+    const result = await window.gpcl.downloadUpdate(version);
+
+    if (result.success) {
+      if (downloadStatusEl) downloadStatusEl.textContent = '下载完成，正在校验...';
+      if (progressFill) progressFill.style.width = '100%';
+      if (progressText) progressText.textContent = '100%';
+
+      // SHA1 校验（非强制，失败时询问用户）
+      const verifyResult = await window.gpcl.verifyUpdateSHA1(result.filePath);
+      let sha1Ok = verifyResult.success;
+      let sha1Message = '下载完成';
+
+      if (!sha1Ok) {
+        // 校验失败或SHA1文件不存在，询问用户是否继续
+        const proceed = await showDialog({
+          type: 'warning',
+          title: '文件校验异常',
+          message: `SHA1校验未通过：${verifyResult.error || '无法获取校验信息'}\n\n文件可能不完整或已损坏，是否仍要继续安装？`,
+          confirmText: '继续安装',
+          cancelText: '取消'
+        });
+        if (!proceed) {
+          if (downloadPanel) downloadPanel.classList.add('hidden');
+          showToast('已取消', '更新安装已取消', 'info');
+          return;
+        }
+        sha1Message = '校验异常，已跳过';
+      } else {
+        sha1Message = '下载完成，校验通过';
+      }
+
+      if (downloadStatusEl) downloadStatusEl.textContent = sha1Message + '，准备安装...';
+      if (cancelBtn) {
+        cancelBtn.textContent = '下载完成';
+        cancelBtn.classList.add('complete');
+        cancelBtn.disabled = true;
+        cancelBtn.onclick = null;
+      }
+
+      // 显示更新确认对话框
+      const userConfirmed = await showDialog({
+        type: 'confirm',
+        title: '更新就绪',
+        message: 'GoodPlanCraftLauncher 已经准备好全新的开始，接下来需要重新启动，是否继续？',
+        confirmText: '继续更新',
+        cancelText: '稍后'
+      });
+
+      if (userConfirmed) {
+        // "继续更新" - 立即执行安装程序并退出
+        if (downloadPanel) downloadPanel.classList.add('hidden');
+        const execResult = await window.gpcl.executeUpdateInstaller(result.filePath);
+        if (execResult.success) {
+          showToast('正在更新', '启动器即将关闭并开始安装...', 'info');
+          setTimeout(() => {
+            if (window.gpcl.closeWindow) window.gpcl.closeWindow();
+          }, 1000);
+        } else {
+          showToast('执行失败', execResult.error || '无法启动安装程序', 'error');
+        }
+      } else {
+        // "稍后" - 设置关闭钩子
+        await window.gpcl.setUpdateShutdownHook(result.filePath);
+        if (downloadPanel) downloadPanel.classList.add('hidden');
+        showToast('已记住', '关闭启动器时将自动执行更新', 'info');
+      }
+    } else if (result.cancelled) {
+      if (downloadPanel) downloadPanel.classList.add('hidden');
+      if (downloadStatusEl) downloadStatusEl.textContent = '下载已取消';
+    } else {
+      throw new Error(result.error || '下载失败');
+    }
+  } catch (err) {
+    if (downloadStatusEl) downloadStatusEl.textContent = `下载失败: ${err.message}`;
+    showToast('更新下载失败', err.message, 'error');
+    if (cancelBtn) {
+      cancelBtn.disabled = true;
+      cancelBtn.onclick = null;
+    }
+  } finally {
+    isUpdateDownloadActive = false;
+  }
+}
+
+
+// ===== 应用内更新下载结束 =====
 
 async function updateSettingsBadge() {
   const settingsMenu = document.getElementById('menu-settings');

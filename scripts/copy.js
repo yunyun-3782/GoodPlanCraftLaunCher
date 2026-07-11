@@ -1,4 +1,4 @@
-﻿/*
+/*
  * CaelLab BY-SA Code License
  * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS
 
@@ -42,6 +42,13 @@ const iconDest = path.join(dest, 'static', 'icon');
 if (fs.existsSync(iconSrc)) {
   fs.mkdirSync(path.join(dest, 'static'), { recursive: true });
   fs.cpSync(iconSrc, iconDest, { recursive: true });
+}
+
+const moreSrc = path.resolve('static', 'more');
+const moreDest = path.join(dest, 'static', 'more');
+if (fs.existsSync(moreSrc)) {
+  fs.mkdirSync(path.join(dest, 'static'), { recursive: true });
+  fs.cpSync(moreSrc, moreDest, { recursive: true });
 }
 
 console.log('✅ copy-files 完成');
