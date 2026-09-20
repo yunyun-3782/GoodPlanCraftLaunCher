@@ -1,13 +1,24 @@
-/* 
- * CaelLab BY-SA Code License 
- * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS 
-
- * Source: https://github.com/yunyun-3782/GoodPlanCraftLauncher 
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS
+ * Licensed under the CaelLab BY-SA Code License, Version 2.0
+ * or any later version. https://www.caellab.com/license/bysa-code-v2.txt
+ * Source: https://github.com/yunyun-3782/GoodPlanCraftLauncher
  */
 
-let GAME_DIR = null;
+declare const Chart: any;
 
-async function initGameDir() {
+declare global {
+  interface Window {
+    gpcl: any;
+    Chart?: any;
+    launchProgressInterval?: ReturnType<typeof setInterval> | null;
+  }
+}
+
+let GAME_DIR: string | null = null;
+let msAuthData: { uuid: string; username: string; accessToken: string } | null = null;
+
+async function initGameDir(): Promise<string | null> {
   if (!GAME_DIR) {
     GAME_DIR = await window.gpcl.getGameDir();
   }
@@ -15,83 +26,82 @@ async function initGameDir() {
 }
 
 
-const usernameInput = document.getElementById('username');
-const versionSelect = document.getElementById('version');
-const launchBtn = document.getElementById('launch-btn');
-const statusDiv = document.getElementById('status');
+const usernameInput: HTMLInputElement | null = document.getElementById('username') as HTMLInputElement | null;
+const versionSelect: HTMLSelectElement | null = document.getElementById('version') as HTMLSelectElement | null;
+const launchBtn: HTMLElement | null = document.getElementById('launch-btn');
+const statusDiv: HTMLElement | null = document.getElementById('status');
 
-const cancelDownloadBtn = document.getElementById('cancel-download-btn');
-const downloadBtn = document.getElementById('download-btn-page');
-const versionListContainer = document.getElementById('version-list-container');
-const versionListSection = document.getElementById('version-list-section');
-const versionDetailPage = document.getElementById('version-detail-page');
-const detailBackBtn = document.getElementById('detail-back-btn');
-const detailDownloadBtn = document.getElementById('detail-download-btn');
-const versionCountLabel = document.getElementById('version-count-label');
+const cancelDownloadBtn: HTMLElement | null = document.getElementById('cancel-download-btn');
+const downloadBtn: HTMLElement | null = document.getElementById('download-btn-page');
+const versionListContainer: HTMLElement | null = document.getElementById('version-list-container');
+const versionListSection: HTMLElement | null = document.getElementById('version-list-section');
+const versionDetailPage: HTMLElement | null = document.getElementById('version-detail-page');
+const detailBackBtn: HTMLElement | null = document.getElementById('detail-back-btn');
+const detailDownloadBtn: HTMLButtonElement | null = document.getElementById('detail-download-btn') as HTMLButtonElement | null;
+const versionCountLabel: HTMLElement | null = document.getElementById('version-count-label');
 
-const menuDownload = document.getElementById('menu-download');
-const menuLaunch = document.getElementById('menu-launch');
-const menuSettings = document.getElementById('menu-settings');
-const menuMore = document.getElementById('menu-more');
-const downloadPage = document.getElementById('download-page');
-const launchPanel = document.getElementById('launch-panel');
-const settingsPage = document.getElementById('settings-page');
-const morePage = document.getElementById('more-page');
-const mainContent = document.querySelector('.main-content .container');
+const menuDownload: HTMLElement | null = document.getElementById('menu-download');
+const menuLaunch: HTMLElement | null = document.getElementById('menu-launch');
+const menuSettings: HTMLElement | null = document.getElementById('menu-settings');
+const menuMore: HTMLElement | null = document.getElementById('menu-more');
+const downloadPage: HTMLElement | null = document.getElementById('download-page');
+const launchPanel: HTMLElement | null = document.getElementById('launch-panel');
+const settingsPage: HTMLElement | null = document.getElementById('settings-page');
+const morePage: HTMLElement | null = document.getElementById('more-page');
+const mainContent: Element | null = document.querySelector('.main-content .container');
 
-const minimizeBtn = document.getElementById('minimize-btn');
-const closeBtn = document.getElementById('close-btn');
+const minimizeBtn: HTMLElement | null = document.getElementById('minimize-btn');
+const closeBtn: HTMLElement | null = document.getElementById('close-btn');
 
-const toastContainer = document.getElementById('toast-container');
-const toastHistory = new Map();
-const TOAST_DEDUP_MS = 3000;
+const toastContainer: HTMLElement | null = document.getElementById('toast-container');
+const toastHistory: Map<string, number> = new Map();
+const TOAST_DEDUP_MS: number = 3000;
 
-const dialogOverlay = document.getElementById('dialog-overlay');
-const dialogIcon = document.getElementById('dialog-icon');
-const dialogTitle = document.getElementById('dialog-title');
-const dialogMessage = document.getElementById('dialog-message');
-const dialogFooterSingle = document.getElementById('dialog-footer-single');
-const dialogFooterConfirm = document.getElementById('dialog-footer-confirm');
-const dialogBtnOk = document.getElementById('dialog-btn-ok');
-const dialogBtnYes = document.getElementById('dialog-btn-yes');
-const dialogBtnCancel = document.getElementById('dialog-btn-cancel');
+const dialogOverlay: HTMLElement | null = document.getElementById('dialog-overlay');
+const dialogIcon: HTMLElement | null = document.getElementById('dialog-icon');
+const dialogTitle: HTMLElement | null = document.getElementById('dialog-title');
+const dialogMessage: HTMLElement | null = document.getElementById('dialog-message');
+const dialogFooterSingle: HTMLElement | null = document.getElementById('dialog-footer-single');
+const dialogFooterConfirm: HTMLElement | null = document.getElementById('dialog-footer-confirm');
+const dialogBtnOk: HTMLElement | null = document.getElementById('dialog-btn-ok');
+const dialogBtnYes: HTMLElement | null = document.getElementById('dialog-btn-yes');
+const dialogBtnCancel: HTMLElement | null = document.getElementById('dialog-btn-cancel');
 
-let dialogResolve = null;
+let dialogResolve: ((value: boolean) => void) | null = null;
 
-function showDialog(options) {
+function showDialog(options: { type?: string; title?: string; message?: string; confirmText?: string; cancelText?: string }): Promise<boolean> {
   return new Promise((resolve) => {
     dialogResolve = resolve;
 
-    const icons = {
+    const icons: Record<string, string> = {
       info: 'ℹ️',
       warning: '⚠️',
       error: '❌',
       question: '❓'
     };
 
-    dialogIcon.textContent = icons[options.type] || icons.info;
-    dialogTitle.textContent = options.title || '提示';
-    dialogMessage.textContent = options.message || '';
+    if (dialogIcon) dialogIcon.textContent = icons[options.type || ''] || icons.info;
+    if (dialogTitle) dialogTitle.textContent = options.title || '提示';
+    if (dialogMessage) dialogMessage.textContent = options.message || '';
 
-    if (options.type === 'confirm' || options.buttons) {
-      dialogFooterSingle.classList.add('hidden');
-      dialogFooterConfirm.classList.remove('hidden');
-      // 支持自定义按钮标签
+    if (options.type === 'confirm' || options.type) {
+      if (dialogFooterSingle) dialogFooterSingle.classList.add('hidden');
+      if (dialogFooterConfirm) dialogFooterConfirm.classList.remove('hidden');
       if (dialogBtnYes && options.confirmText) dialogBtnYes.textContent = options.confirmText;
       else if (dialogBtnYes) dialogBtnYes.textContent = '是';
       if (dialogBtnCancel && options.cancelText) dialogBtnCancel.textContent = options.cancelText;
       else if (dialogBtnCancel) dialogBtnCancel.textContent = '否';
     } else {
-      dialogFooterSingle.classList.remove('hidden');
-      dialogFooterConfirm.classList.add('hidden');
+      if (dialogFooterSingle) dialogFooterSingle.classList.remove('hidden');
+      if (dialogFooterConfirm) dialogFooterConfirm.classList.add('hidden');
     }
 
-    dialogOverlay.classList.remove('hidden');
+    if (dialogOverlay) dialogOverlay.classList.remove('hidden');
   });
 }
 
-function hideDialog() {
-  dialogOverlay.classList.add('hidden');
+function hideDialog(): void {
+  if (dialogOverlay) dialogOverlay.classList.add('hidden');
   dialogResolve = null;
 }
 
@@ -117,8 +127,8 @@ if (dialogBtnCancel) {
 }
 
 if (window.gpcl && window.gpcl.onConfirmCloseWhileDownloading) {
-  window.gpcl.onConfirmCloseWhileDownloading(async () => {
-    const result = await showDialog({
+  window.gpcl.onConfirmCloseWhileDownloading(async (): Promise<void> => {
+    const result: boolean = await showDialog({
       type: 'confirm',
       title: '确认关闭',
       message: '当前正在下载中，关闭会停止下载并清理已下载的文件。确定要关闭吗？'
@@ -138,15 +148,15 @@ if (window.gpcl && window.gpcl.onConfirmCloseWhileDownloading) {
   });
 }
 
-function showToast(title, message, type = 'info', key = null) {
+function showToast(title: string, message?: string, type: string = 'info', key?: string | null): void {
   if (!toastContainer) return;
   if (key) {
-    const last = toastHistory.get(key);
+    const last: number | undefined = toastHistory.get(key);
     if (last && Date.now() - last < TOAST_DEDUP_MS) return;
     toastHistory.set(key, Date.now());
   }
-  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-  const toast = document.createElement('div');
+  const icons: Record<string, string> = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const toast: HTMLDivElement = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.innerHTML = `
     <span class="toast-icon">${icons[type] || icons.info}</span>
@@ -163,15 +173,15 @@ function showToast(title, message, type = 'info', key = null) {
   }, 4000);
 }
 
-let chartLoaded = false;
+let chartLoaded: boolean = false;
 
-function loadChartJs() {
+function loadChartJs(): Promise<void> {
   return new Promise((resolve) => {
     if (chartLoaded || window.Chart) {
       resolve();
       return;
     }
-    const script = document.createElement('script');
+    const script: HTMLScriptElement = document.createElement('script');
     script.src = 'js/chart.umd.js';
     script.onload = () => {
       chartLoaded = true;
@@ -182,19 +192,19 @@ function loadChartJs() {
   });
 }
 
-let speedChart = null;
-let speedData = [];
-let peakSpeed = 0;
-const downloadPanel = document.getElementById('download-panel');
+let speedChart: any = null;
+let speedData: number[] = [];
+let peakSpeed: number = 0;
+const downloadPanel: HTMLElement | null = document.getElementById('download-panel');
 
-let currentPage = 'launch';
-let isUpdateDownloadActive = false;
+let currentPage: string = 'launch';
+let isUpdateDownloadActive: boolean = false;
 
-function getMaxConcurrentFromSettings() {
+function getMaxConcurrentFromSettings(): number {
   return DEFAULT_MAX_THREADS;
 }
 
-function showPage(name) {
+function showPage(name: string): void {
   currentPage = name;
 
   if (name === 'download') {
@@ -227,35 +237,35 @@ function showPage(name) {
   if (menuMore) menuMore.classList.toggle('active', name === 'more');
 }
 
-function switchSettingsTab(tabName) {
-  const sidebarItems = document.querySelectorAll('#settings-sidebar .settings-sidebar-item');
-  const contentPanels = document.querySelectorAll('#settings-page .settings-content-panel');
+function switchSettingsTab(tabName: string): void {
+  const sidebarItems: NodeListOf<Element> = document.querySelectorAll('#settings-sidebar .settings-sidebar-item');
+  const contentPanels: NodeListOf<Element> = document.querySelectorAll('#settings-page .settings-content-panel');
 
-  sidebarItems.forEach(item => {
-    item.classList.toggle('active', item.dataset.tab === tabName);
+  sidebarItems.forEach((item: Element) => {
+    item.classList.toggle('active', (item as HTMLElement).dataset.tab === tabName);
   });
 
-  contentPanels.forEach(panel => {
+  contentPanels.forEach((panel: Element) => {
     panel.classList.toggle('active', panel.id === `settings-content-${tabName}`);
     panel.classList.toggle('hidden', panel.id !== `settings-content-${tabName}`);
   });
 }
 
-function switchMoreTab(tabName) {
-  const sidebarItems = document.querySelectorAll('#more-sidebar .settings-sidebar-item');
-  const contentPanels = document.querySelectorAll('#more-page .settings-content-panel');
+function switchMoreTab(tabName: string): void {
+  const sidebarItems: NodeListOf<Element> = document.querySelectorAll('#more-sidebar .settings-sidebar-item');
+  const contentPanels: NodeListOf<Element> = document.querySelectorAll('#more-page .settings-content-panel');
 
-  sidebarItems.forEach(item => {
-    item.classList.toggle('active', item.dataset.tab === tabName);
+  sidebarItems.forEach((item: Element) => {
+    item.classList.toggle('active', (item as HTMLElement).dataset.tab === tabName);
   });
 
-  contentPanels.forEach(panel => {
+  contentPanels.forEach((panel: Element) => {
     panel.classList.toggle('active', panel.id === `more-content-${tabName}`);
     panel.classList.toggle('hidden', panel.id !== `more-content-${tabName}`);
   });
 }
 
-function updateMenuActive(pageName) {
+function updateMenuActive(pageName: string): void {
   if (menuDownload) menuDownload.classList.toggle('active', pageName === 'download');
   if (menuLaunch) menuLaunch.classList.toggle('active', pageName === 'launch');
   if (menuSettings) menuSettings.classList.toggle('active', pageName === 'settings');
@@ -267,45 +277,45 @@ if (menuLaunch) menuLaunch.addEventListener('click', () => showPage('launch'));
 if (menuSettings) menuSettings.addEventListener('click', () => showPage('settings'));
 if (menuMore) menuMore.addEventListener('click', () => showPage('more'));
 
-document.querySelectorAll('#more-sidebar .settings-sidebar-item').forEach(item => {
+document.querySelectorAll('#more-sidebar .settings-sidebar-item').forEach((item: Element) => {
   item.addEventListener('click', () => {
-    const tabName = item.dataset.tab;
-    switchMoreTab(tabName);
+    const tabName: string | undefined = (item as HTMLElement).dataset.tab;
+    switchMoreTab(tabName!);
   });
 });
 
-function switchMoreTab(tabName) {
-  const sidebarItems = document.querySelectorAll('#more-sidebar .settings-sidebar-item');
-  const contentPanels = document.querySelectorAll('#more-page .settings-content-panel');
-  const morePage = document.getElementById('more-page');
-  const forumIframe = document.getElementById('forum-iframe');
+function switchMoreTab(tabName: string): void {
+  const sidebarItems: NodeListOf<Element> = document.querySelectorAll('#more-sidebar .settings-sidebar-item');
+  const contentPanels: NodeListOf<Element> = document.querySelectorAll('#more-page .settings-content-panel');
+  const morePageEl: HTMLElement | null = document.getElementById('more-page');
+  const forumIframe: HTMLIFrameElement | null = document.getElementById('forum-iframe') as HTMLIFrameElement | null;
 
-  sidebarItems.forEach(item => {
-    item.classList.toggle('active', item.dataset.tab === tabName);
+  sidebarItems.forEach((item: Element) => {
+    item.classList.toggle('active', (item as HTMLElement).dataset.tab === tabName);
   });
 
-  contentPanels.forEach(panel => {
-    const isForum = panel.id === `more-content-${tabName}` && tabName === 'forum';
+  contentPanels.forEach((panel: Element) => {
+    const isForum: boolean = panel.id === `more-content-${tabName}` && tabName === 'forum';
     panel.classList.toggle('active', panel.id === `more-content-${tabName}`);
     panel.classList.toggle('hidden', panel.id !== `more-content-${tabName}`);
     
     if (isForum) {
-      if (!forumIframe.src) {
+      if (forumIframe && !forumIframe.src) {
         forumIframe.src = 'https://forum.xmuer.online/?sort=newest';
       }
-      morePage.classList.add('forum-mode');
+      if (morePageEl) morePageEl.classList.add('forum-mode');
       updateForumIframeSize();
     } else {
-      morePage.classList.remove('forum-mode');
+      if (morePageEl) morePageEl.classList.remove('forum-mode');
     }
   });
 }
 
-function updateForumIframeSize() {
-  const forumIframe = document.getElementById('forum-iframe');
-  const morePage = document.getElementById('more-page');
+function updateForumIframeSize(): void {
+  const forumIframe: HTMLIFrameElement | null = document.getElementById('forum-iframe') as HTMLIFrameElement | null;
+  const morePageEl: HTMLElement | null = document.getElementById('more-page');
   
-  if (forumIframe && morePage.classList.contains('forum-mode')) {
+  if (forumIframe && morePageEl && morePageEl.classList.contains('forum-mode')) {
     forumIframe.style.width = '100%';
     forumIframe.style.height = '100%';
   }
@@ -313,31 +323,31 @@ function updateForumIframeSize() {
 
 window.addEventListener('resize', updateForumIframeSize);
 
-const memoryOptimizeBtn = document.getElementById('memory-optimize-btn');
+const memoryOptimizeBtn: HTMLElement | null = document.getElementById('memory-optimize-btn');
 if (memoryOptimizeBtn) {
-  memoryOptimizeBtn.addEventListener('click', async () => {
-    const btnIcon = memoryOptimizeBtn.querySelector('.btn-icon');
-    const btnText = memoryOptimizeBtn.querySelector('.btn-text');
+  memoryOptimizeBtn.addEventListener('click', async (): Promise<void> => {
+    const btnIcon: HTMLElement | null = memoryOptimizeBtn.querySelector('.btn-icon');
+    const btnText: HTMLElement | null = memoryOptimizeBtn.querySelector('.btn-text');
     
-    const originalIcon = btnIcon.textContent;
-    const originalText = btnText.textContent;
+    const originalIcon: string | null = btnIcon?.textContent || null;
+    const originalText: string | null = btnText?.textContent || null;
     
-    memoryOptimizeBtn.disabled = true;
-    btnIcon.textContent = '⏳';
-    btnText.textContent = '优化中...';
+    (memoryOptimizeBtn as HTMLButtonElement).disabled = true;
+    if (btnIcon) btnIcon.textContent = '⏳';
+    if (btnText) btnText.textContent = '优化中...';
     
-    const beforeMemory = await window.gpcl.getMemoryUsage();
+    const beforeMemory: number = await window.gpcl.getMemoryUsage();
     
     await window.gpcl.optimizeMemory();
     
-    const afterMemory = await window.gpcl.getMemoryUsage();
+    const afterMemory: number = await window.gpcl.getMemoryUsage();
     
-    const savedMemory = (beforeMemory - afterMemory).toFixed(2);
-    const afterMemoryFormatted = afterMemory.toFixed(2);
+    const savedMemory: string = (beforeMemory - afterMemory).toFixed(2);
+    const afterMemoryFormatted: string = afterMemory.toFixed(2);
     
-    memoryOptimizeBtn.disabled = false;
-    btnIcon.textContent = originalIcon;
-    btnText.textContent = originalText;
+    (memoryOptimizeBtn as HTMLButtonElement).disabled = false;
+    if (btnIcon) btnIcon.textContent = originalIcon;
+    if (btnText) btnText.textContent = originalText;
     
     showToast(`内存优化完成！\n当前内存占用: ${afterMemoryFormatted}GB\n比优化前减少了: ${savedMemory}GB`, 'success');
   });
@@ -352,27 +362,28 @@ if (closeBtn) closeBtn.addEventListener('click', () => {
   }
 });
 
-const customSelectHandlers = new Map();
+const customSelectHandlers: Map<string, { setValue: (value: string, label?: string) => void; getValue: () => string | null }> = new Map();
 
-function initCustomSelect(selectId, onChangeCallback) {
-  const selectContainer = document.querySelector(`.custom-select[data-select-id="${selectId}"]`);
+function initCustomSelect(selectId: string, onChangeCallback?: (value: string) => void): void {
+  const selectContainer: HTMLElement | null = document.querySelector(`.custom-select[data-select-id="${selectId}"]`) as HTMLElement | null;
   if (!selectContainer) return;
 
-  const trigger = selectContainer.querySelector('.custom-select-trigger');
-  const dropdown = selectContainer.querySelector('.custom-select-dropdown');
-  const valueSpan = selectContainer.querySelector('.custom-select-value');
-  const options = selectContainer.querySelectorAll('.custom-select-option');
+  const trigger: HTMLElement | null = selectContainer.querySelector('.custom-select-trigger');
+  const dropdown: HTMLElement | null = selectContainer.querySelector('.custom-select-dropdown');
+  const valueSpan: HTMLElement | null = selectContainer.querySelector('.custom-select-value');
+  const options: NodeListOf<Element> = selectContainer.querySelectorAll('.custom-select-option');
 
-  let currentValue = null;
-  options.forEach(option => {
+  let currentValue: string | null = null;
+  options.forEach((option: Element) => {
     if (option.classList.contains('selected')) {
-      currentValue = option.dataset.value;
+      currentValue = (option as HTMLElement).dataset.value || null;
     }
   });
 
-  trigger.addEventListener('click', (e) => {
+  trigger?.addEventListener('click', (e: Event) => {
     e.stopPropagation();
-    const isOpen = dropdown.classList.contains('open');
+    if (!dropdown) return;
+    const isOpen: boolean = dropdown.classList.contains('open');
     closeAllCustomSelects();
     if (!isOpen) {
       dropdown.classList.add('open');
@@ -380,37 +391,37 @@ function initCustomSelect(selectId, onChangeCallback) {
     }
   });
 
-  options.forEach(option => {
-    option.addEventListener('click', (e) => {
+  options.forEach((option: Element) => {
+    option.addEventListener('click', (e: Event) => {
       e.stopPropagation();
       if (option.classList.contains('disabled')) return;
 
-      const value = option.dataset.value;
-      const label = option.textContent;
+      const value: string | undefined = (option as HTMLElement).dataset.value;
+      const label: string | null = option.textContent;
 
-      options.forEach(opt => opt.classList.remove('selected'));
+      options.forEach((opt: Element) => opt.classList.remove('selected'));
       option.classList.add('selected');
-      valueSpan.textContent = label;
-      currentValue = value;
+      if (valueSpan) valueSpan.textContent = label;
+      currentValue = value || null;
 
       closeAllCustomSelects();
 
-      if (onChangeCallback) {
+      if (onChangeCallback && value) {
         onChangeCallback(value);
       }
     });
   });
 
   customSelectHandlers.set(selectId, {
-    setValue: (value, label) => {
-      options.forEach(opt => opt.classList.remove('selected'));
-      const targetOpt = selectContainer.querySelector(`.custom-select-option[data-value="${value}"]`);
+    setValue: (value: string, label?: string) => {
+      options.forEach((opt: Element) => opt.classList.remove('selected'));
+      const targetOpt: Element | null = selectContainer.querySelector(`.custom-select-option[data-value="${value}"]`);
       if (targetOpt) {
         targetOpt.classList.add('selected');
-        valueSpan.textContent = targetOpt.textContent;
+        if (valueSpan) valueSpan.textContent = targetOpt.textContent;
         currentValue = value;
       } else if (label) {
-        valueSpan.textContent = label;
+        if (valueSpan) valueSpan.textContent = label;
         currentValue = value;
       }
     },
@@ -418,29 +429,29 @@ function initCustomSelect(selectId, onChangeCallback) {
   });
 }
 
-function closeAllCustomSelects() {
-  document.querySelectorAll('.custom-select-dropdown').forEach(d => d.classList.remove('open'));
-  document.querySelectorAll('.custom-select-trigger').forEach(t => t.classList.remove('active'));
+function closeAllCustomSelects(): void {
+  document.querySelectorAll('.custom-select-dropdown').forEach((d: Element) => d.classList.remove('open'));
+  document.querySelectorAll('.custom-select-trigger').forEach((t: Element) => t.classList.remove('active'));
 }
 
 document.addEventListener('click', closeAllCustomSelects);
 
-function setCustomSelectValue(selectId, value, label) {
+function setCustomSelectValue(selectId: string, value: string, label?: string): void {
   const handler = customSelectHandlers.get(selectId);
   if (handler) {
     handler.setValue(value, label);
   }
 }
 
-function getCustomSelectValue(selectId) {
+function getCustomSelectValue(selectId: string): string | null {
   const handler = customSelectHandlers.get(selectId);
   return handler ? handler.getValue() : null;
 }
 
-const DEFAULT_MAX_THREADS = 64;
-const MAX_THREADS_LIMIT = 128;
+const DEFAULT_MAX_THREADS: number = 64;
+const MAX_THREADS_LIMIT: number = 128;
 
-const JAVA_RUNTIME_NAME_MAP = {
+const JAVA_RUNTIME_NAME_MAP: Record<string, string> = {
   "8": "jre-legacy",
   "16": "java-runtime-beta",
   "17": "java-runtime-gamma",
@@ -448,26 +459,26 @@ const JAVA_RUNTIME_NAME_MAP = {
   "25": "java-runtime-epsilon"
 };
 
-const JAVA_VERSION_DESC = {
+const JAVA_VERSION_DESC: Record<string, { mcVersions: string; desc: string }> = {
   "8": { mcVersions: "1.7.10 - 1.16.5", desc: "经典版本兼容" },
   "17": { mcVersions: "1.17 - 1.20.4", desc: "最稳定，推荐使用" },
   "21": { mcVersions: "1.20.5 - 1.21+", desc: "最新LTS版本" },
   "25": { mcVersions: "1.21+", desc: "最新尝鲜版" }
 };
 
-function getJavaRuntimeName(javaVersion) {
+function getJavaRuntimeName(javaVersion: string): string {
   return JAVA_RUNTIME_NAME_MAP[javaVersion] || `jre${javaVersion}`;
 }
 
-async function initJavaVersionStatus() {
-  const javaVersions = ["8", "17", "21", "25"];
+async function initJavaVersionStatus(): Promise<void> {
+  const javaVersions: string[] = ["8", "17", "21", "25"];
 
   for (const ver of javaVersions) {
     try {
       const result = await window.gpcl.checkJava(ver);
-      const card = document.querySelector(`.java-version-card[data-version="${ver}"]`);
-      const badge = document.getElementById(`java-${ver}-status`);
-      const btn = card?.querySelector('.java-install-btn');
+      const card: HTMLElement | null = document.querySelector(`.java-version-card[data-version="${ver}"]`) as HTMLElement | null;
+      const badge: HTMLElement | null = document.getElementById(`java-${ver}-status`);
+      const btn: HTMLElement | null = card?.querySelector('.java-install-btn') as HTMLElement | null;
 
       if (result.installed) {
         if (card) card.classList.add('installed');
@@ -478,10 +489,10 @@ async function initJavaVersionStatus() {
         if (btn) {
           btn.textContent = '卸载';
           btn.classList.add('installed');
-          btn.disabled = false;
+          (btn as HTMLButtonElement).disabled = false;
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(`检查Java ${ver} 状态失败`, e);
     }
   }
@@ -489,16 +500,16 @@ async function initJavaVersionStatus() {
   updateJavaInstallStatus();
 }
 
-function updateJavaInstallStatus() {
-  const statusEl = document.getElementById('java-install-status');
+function updateJavaInstallStatus(): void {
+  const statusEl: HTMLElement | null = document.getElementById('java-install-status');
   if (!statusEl) return;
 
-  const javaVersions = ["8", "17", "21", "25"];
-  const installed = [];
-  const notInstalled = [];
+  const javaVersions: string[] = ["8", "17", "21", "25"];
+  const installed: string[] = [];
+  const notInstalled: string[] = [];
 
-  javaVersions.forEach(ver => {
-    const card = document.querySelector(`.java-version-card[data-version="${ver}"]`);
+  javaVersions.forEach((ver: string) => {
+    const card: HTMLElement | null = document.querySelector(`.java-version-card[data-version="${ver}"]`) as HTMLElement | null;
     if (card?.classList.contains('installed')) {
       installed.push(ver);
     } else {
@@ -515,46 +526,46 @@ function updateJavaInstallStatus() {
   }
 }
 
-function bindJavaInstallButtons() {
-  const buttons = document.querySelectorAll('.java-install-btn');
+function bindJavaInstallButtons(): void {
+  const buttons: NodeListOf<Element> = document.querySelectorAll('.java-install-btn');
 
-  buttons.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const version = btn.dataset.version;
+  buttons.forEach((btn: Element) => {
+    btn.addEventListener('click', async (): Promise<void> => {
+      const version: string | undefined = (btn as HTMLElement).dataset.version;
       if (btn.classList.contains('installed')) {
-        await uninstallJavaWithPanel(version);
+        await uninstallJavaWithPanel(version!);
       } else {
-        await installJavaWithPanel(version);
+        await installJavaWithPanel(version!);
       }
     });
   });
 }
 
-async function installJavaWithPanel(javaVersion) {
-  const filenameEl = document.getElementById('download-filename');
-  const downloadStatusEl = document.getElementById('download-status');
-  const downloadPanel = document.getElementById('download-panel');
-  const progressFill = document.getElementById('progress-fill');
-  const progressText = document.getElementById('progress-text');
-  const cancelBtn = document.getElementById('cancel-download-btn');
+async function installJavaWithPanel(javaVersion: string): Promise<void> {
+  const filenameEl: HTMLElement | null = document.getElementById('download-filename');
+  const downloadStatusEl: HTMLElement | null = document.getElementById('download-status');
+  const downloadPanelEl: HTMLElement | null = document.getElementById('download-panel');
+  const progressFill: HTMLElement | null = document.getElementById('progress-fill');
+  const progressText: HTMLElement | null = document.getElementById('progress-text');
+  const cancelBtn: HTMLElement | null = document.getElementById('cancel-download-btn');
 
-  const downloadPage = document.getElementById('download-page');
-  if (downloadPage) {
-    downloadPage.scrollTop = 0;
+  const downloadPageEl: HTMLElement | null = document.getElementById('download-page');
+  if (downloadPageEl) {
+    downloadPageEl.scrollTop = 0;
   }
 
-  if (downloadPanel) {
-    downloadPanel.classList.remove('hidden');
-    downloadPanel.classList.add('download-panel-container');
+  if (downloadPanelEl) {
+    downloadPanelEl.classList.remove('hidden');
+    downloadPanelEl.classList.add('download-panel-container');
   }
   if (filenameEl) filenameEl.textContent = `正在安装: Java ${javaVersion}`;
   if (downloadStatusEl) downloadStatusEl.textContent = `准备下载 Java ${javaVersion}...`;
   if (progressFill) progressFill.style.width = '0%';
   if (progressText) progressText.textContent = '0%';
-  if (cancelBtn) cancelBtn.disabled = false;
+  if (cancelBtn) (cancelBtn as HTMLButtonElement).disabled = false;
 
-  document.querySelectorAll('.java-install-btn').forEach(btn => {
-    btn.disabled = true;
+  document.querySelectorAll('.java-install-btn').forEach((btn: Element) => {
+    (btn as HTMLButtonElement).disabled = true;
   });
 
   try {
@@ -567,9 +578,9 @@ async function installJavaWithPanel(javaVersion) {
 
       showToast('安装成功', `Java ${javaVersion} 已安装完成`, 'success', 'java-install-success');
 
-      const card = document.querySelector(`.java-version-card[data-version="${javaVersion}"]`);
-      const badge = document.getElementById(`java-${javaVersion}-status`);
-      const btn = card?.querySelector('.java-install-btn');
+      const card: HTMLElement | null = document.querySelector(`.java-version-card[data-version="${javaVersion}"]`) as HTMLElement | null;
+      const badge: HTMLElement | null = document.getElementById(`java-${javaVersion}-status`);
+      const btn: HTMLElement | null = card?.querySelector('.java-install-btn') as HTMLElement | null;
 
       if (card) card.classList.add('installed');
       if (badge) {
@@ -579,35 +590,34 @@ async function installJavaWithPanel(javaVersion) {
       if (btn) {
         btn.textContent = '卸载';
         btn.classList.add('installed');
-        btn.disabled = false;
+        (btn as HTMLButtonElement).disabled = false;
       }
 
       updateJavaInstallStatus();
 
       setTimeout(() => {
-        if (downloadPanel) {
-          downloadPanel.classList.add('hidden');
-          downloadPanel.classList.remove('download-panel-container');
+        if (downloadPanelEl) {
+          downloadPanelEl.classList.add('hidden');
+          downloadPanelEl.classList.remove('download-panel-container');
         }
       }, 2000);
     } else {
       throw new Error(result.error || '安装失败');
     }
-  } catch (err) {
+  } catch (err: any) {
     if (downloadStatusEl) downloadStatusEl.textContent = `❌ 安装失败: ${err.message || err}`;
     showToast('安装失败', err.message || String(err), 'error', 'java-install-failed');
   }
-
-  document.querySelectorAll('.java-install-btn').forEach(btn => {
+  document.querySelectorAll('.java-install-btn').forEach((btn: Element) => {
     if (!btn.classList.contains('installed')) {
-      btn.disabled = false;
+      (btn as HTMLButtonElement).disabled = false;
     }
   });
-  if (cancelBtn) cancelBtn.disabled = true;
+  if (cancelBtn) (cancelBtn as HTMLButtonElement).disabled = true;
 }
 
-async function uninstallJavaWithPanel(javaVersion) {
-  const confirmed = await showDialog({
+async function uninstallJavaWithPanel(javaVersion: string): Promise<void> {
+  const confirmed: boolean = await showDialog({
     type: 'confirm',
     title: '确认卸载',
     message: `确定要卸载 Java ${javaVersion} 吗？`
@@ -623,9 +633,9 @@ async function uninstallJavaWithPanel(javaVersion) {
     if (result.success) {
       showToast('卸载成功', `Java ${javaVersion} 已卸载`, 'success', 'java-uninstall-success');
 
-      const card = document.querySelector(`.java-version-card[data-version="${javaVersion}"]`);
-      const badge = document.getElementById(`java-${javaVersion}-status`);
-      const btn = card?.querySelector('.java-install-btn');
+      const card: HTMLElement | null = document.querySelector(`.java-version-card[data-version="${javaVersion}"]`) as HTMLElement | null;
+      const badge: HTMLElement | null = document.getElementById(`java-${javaVersion}-status`);
+      const btn: HTMLElement | null = card?.querySelector('.java-install-btn') as HTMLElement | null;
 
       if (card) card.classList.remove('installed');
       if (badge) {
@@ -635,24 +645,24 @@ async function uninstallJavaWithPanel(javaVersion) {
       if (btn) {
         btn.textContent = '安装';
         btn.classList.remove('installed');
-        btn.disabled = false;
+        (btn as HTMLButtonElement).disabled = false;
       }
 
       updateJavaInstallStatus();
     } else {
       throw new Error(result.error || '卸载失败');
     }
-  } catch (err) {
+  } catch (err: any) {
     showToast('卸载失败', err.message || String(err), 'error', 'java-uninstall-failed');
   }
 }
 
-function getRecommendedJavaVersionFromMC(mcVersion) {
+function getRecommendedJavaVersionFromMC(mcVersion: string): { version: string; reason: string } {
   
-  const parts = mcVersion.split('.');
-  let major = parseInt(parts[0], 10);
-  let minor = parseInt(parts[1], 10);
-  let patch = parts.length > 2 ? parseInt(parts[2], 10) || 0 : 0;
+  const parts: string[] = mcVersion.split('.');
+  let major: number = parseInt(parts[0], 10);
+  let minor: number = parseInt(parts[1], 10);
+  let patch: number = parts.length > 2 ? parseInt(parts[2], 10) || 0 : 0;
 
   if (isNaN(major)) major = 1;
 
@@ -695,16 +705,16 @@ function getRecommendedJavaVersionFromMC(mcVersion) {
 }
 
 if (window.gpcl && window.gpcl.onDownloadProgress) {
-  const originalCallback = window.gpcl.onDownloadProgress;
-  window.gpcl.onDownloadProgress((data) => {
+  const originalCallback: any = window.gpcl.onDownloadProgress;
+  window.gpcl.onDownloadProgress((data: any): void => {
     
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-text');
-    const filenameEl = document.getElementById('download-filename');
-    const downloadStatusEl = document.getElementById('download-status');
+    const progressFill: HTMLElement | null = document.getElementById('progress-fill');
+    const progressText: HTMLElement | null = document.getElementById('progress-text');
+    const filenameEl: HTMLElement | null = document.getElementById('download-filename');
+    const downloadStatusEl: HTMLElement | null = document.getElementById('download-status');
 
     if (progressFill && progressText) {
-      const percent = data.percent || 0;
+      const percent: number = data.percent || 0;
       progressFill.style.width = percent + '%';
       progressText.textContent = percent.toFixed(1) + '%';
     }
@@ -715,12 +725,12 @@ if (window.gpcl && window.gpcl.onDownloadProgress) {
       downloadStatusEl.textContent = `正在下载: ${data.label}`;
     }
 
-    const floatProgressFill = document.getElementById('float-progress-fill');
-    const floatProgressText = document.getElementById('float-progress-text');
-    const floatNotification = document.getElementById('float-notification');
+    const floatProgressFill: HTMLElement | null = document.getElementById('float-progress-fill');
+    const floatProgressText: HTMLElement | null = document.getElementById('float-progress-text');
+    const floatNotification: HTMLElement | null = document.getElementById('float-notification');
     
-    if (floatProgressFill && floatProgressText && !floatNotification.classList.contains('hidden')) {
-      const percent = data.percent || 0;
+    if (floatProgressFill && floatProgressText && floatNotification && !floatNotification.classList.contains('hidden')) {
+      const percent: number = data.percent || 0;
       floatProgressFill.style.width = percent + '%';
       floatProgressText.textContent = percent.toFixed(1) + '%';
     }
@@ -731,17 +741,17 @@ if (window.gpcl && window.gpcl.onDownloadProgress) {
   });
 }
 
-function showFloatNotification(title, text) {
-  const notification = document.getElementById('float-notification');
-  const titleEl = document.getElementById('float-notification-title');
-  const textEl = document.getElementById('float-notification-text');
+function showFloatNotification(title: string, text: string): void {
+  const notification: HTMLElement | null = document.getElementById('float-notification');
+  const titleEl: HTMLElement | null = document.getElementById('float-notification-title');
+  const textEl: HTMLElement | null = document.getElementById('float-notification-text');
   
   if (notification && titleEl && textEl) {
     titleEl.textContent = title;
     textEl.textContent = text;
 
-    const progressFill = document.getElementById('float-progress-fill');
-    const progressText = document.getElementById('float-progress-text');
+    const progressFill: HTMLElement | null = document.getElementById('float-progress-fill');
+    const progressText: HTMLElement | null = document.getElementById('float-progress-text');
     if (progressFill) progressFill.style.width = '0%';
     if (progressText) progressText.textContent = '0%';
     
@@ -749,17 +759,17 @@ function showFloatNotification(title, text) {
   }
 }
 
-function hideFloatNotification() {
-  const notification = document.getElementById('float-notification');
+function hideFloatNotification(): void {
+  const notification: HTMLElement | null = document.getElementById('float-notification');
   if (notification) {
     notification.classList.add('hidden');
   }
 }
 
 if (window.gpcl && window.gpcl.onGameLog) {
-  window.gpcl.onGameLog((text) => {
+  window.gpcl.onGameLog((text: string): void => {
     if (text.includes('Java') && text.includes('未安装') && text.includes('自动开始下载')) {
-      const match = text.match(/Java\s+(\d+)/);
+      const match: RegExpMatchArray | null = text.match(/Java\s+(\d+)/);
       if (match) {
         showFloatNotification(
           `正在下载 Java ${match[1]}`,
@@ -770,15 +780,15 @@ if (window.gpcl && window.gpcl.onGameLog) {
   });
 }
 
-const floatCloseBtn = document.getElementById('float-notification-close');
+const floatCloseBtn: HTMLElement | null = document.getElementById('float-notification-close');
 if (floatCloseBtn) {
   floatCloseBtn.addEventListener('click', hideFloatNotification);
 }
 
 if (window.gpcl && window.gpcl.onJavaDownloadCompleted) {
-  window.gpcl.onJavaDownloadCompleted((data) => {
+  window.gpcl.onJavaDownloadCompleted((data: any): void => {
     const { javaVersion } = data;
-    const downloadStatusEl = document.getElementById('download-status');
+    const downloadStatusEl: HTMLElement | null = document.getElementById('download-status');
     if (downloadStatusEl) {
       downloadStatusEl.textContent = '✅ 下载完成，正在解压安装...';
     }
@@ -786,9 +796,9 @@ if (window.gpcl && window.gpcl.onJavaDownloadCompleted) {
 }
 
 if (window.gpcl && window.gpcl.onJavaDownloadFailed) {
-  window.gpcl.onJavaDownloadFailed((data) => {
+  window.gpcl.onJavaDownloadFailed((data: any): void => {
     const { error } = data;
-    const downloadStatusEl = document.getElementById('download-status');
+    const downloadStatusEl: HTMLElement | null = document.getElementById('download-status');
     if (downloadStatusEl) {
       downloadStatusEl.textContent = `❌ 下载失败: ${error}`;
     }
@@ -796,117 +806,116 @@ if (window.gpcl && window.gpcl.onJavaDownloadFailed) {
   });
 }
 
-async function loadSettingFromStorage() {
+async function loadSettingFromStorage(): Promise<number> {
   try {
     const settings = await loadSettings();
     return settings.download?.maxConcurrent || DEFAULT_MAX_THREADS;
-  } catch (e) {
+  } catch (e: any) {
     return DEFAULT_MAX_THREADS;
   }
 }
-async function saveSettingToStorage(maxConcurrent) {
+async function saveSettingToStorage(maxConcurrent: number): Promise<boolean> {
   try {
     const settings = await loadSettings();
     settings.download.maxConcurrent = maxConcurrent;
     await gpcl.saveSettings(settings);
     return true;
-  } catch (e) { return false; }
+  } catch (e: any) { return false; }
 }
-const settingsNumInput = document.getElementById('num-threads');
-const settingsBtnMinus = document.getElementById('btn-minus');
-const settingsBtnPlus = document.getElementById('btn-plus');
-const settingsBtnSave = document.getElementById('btn-save');
+const settingsNumInput: HTMLInputElement | null = document.getElementById('num-threads') as HTMLInputElement | null;
+const settingsBtnMinus: HTMLElement | null = document.getElementById('btn-minus');
+const settingsBtnPlus: HTMLElement | null = document.getElementById('btn-plus');
+const settingsBtnSave: HTMLElement | null = document.getElementById('btn-save');
 if (settingsNumInput) {
-  (async () => {
-    settingsNumInput.value = await loadSettingFromStorage();
+  (async (): Promise<void> => {
+    settingsNumInput.value = String(await loadSettingFromStorage());
   })();
-  function clampSettingsInput() {
-    let v = parseInt(settingsNumInput.value, 10);
+  function clampSettingsInput(): void {
+    let v: number = parseInt(settingsNumInput!.value, 10);
     if (isNaN(v) || v < 1) v = 1;
     if (v > MAX_THREADS_LIMIT) v = MAX_THREADS_LIMIT;
-    settingsNumInput.value = v;
+    settingsNumInput!.value = String(v);
   }
   settingsNumInput.addEventListener('change', clampSettingsInput);
   settingsNumInput.addEventListener('blur', clampSettingsInput);
   if (settingsBtnMinus) {
     settingsBtnMinus.addEventListener('click', () => {
-      let v = parseInt(settingsNumInput.value, 10) || 1;
-      if (v > 1) { settingsNumInput.value = v - 1; clampSettingsInput(); }
+      let v: number = parseInt(settingsNumInput.value, 10) || 1;
+      if (v > 1) { settingsNumInput.value = String(v - 1); clampSettingsInput(); }
     });
   }
   if (settingsBtnPlus) {
     settingsBtnPlus.addEventListener('click', () => {
-      let v = parseInt(settingsNumInput.value, 10) || 1;
-      if (v < MAX_THREADS_LIMIT) { settingsNumInput.value = v + 1; clampSettingsInput(); }
+      let v: number = parseInt(settingsNumInput.value, 10) || 1;
+      if (v < MAX_THREADS_LIMIT) { settingsNumInput.value = String(v + 1); clampSettingsInput(); }
     });
   }
   if (settingsBtnSave) {
-    settingsBtnSave.addEventListener('click', async () => {
+    settingsBtnSave.addEventListener('click', async (): Promise<void> => {
       clampSettingsInput();
       await saveSettingToStorage(parseInt(settingsNumInput.value, 10));
-      const orig = settingsBtnSave.textContent;
+      const orig: string | null = settingsBtnSave.textContent;
       settingsBtnSave.textContent = '已保存!';
       setTimeout(() => { settingsBtnSave.textContent = orig; }, 1500);
     });
   }
 
-async function reloadAllSettingsToUI() {
+async function reloadAllSettingsToUI(): Promise<void> {
   const settings = await loadSettings();
   
-  const settingsMemory = document.getElementById('settings-memory');
+  const settingsMemory: HTMLElement | null = document.getElementById('settings-memory');
   if (settingsMemory) {
-    settingsMemory.value = settings.game?.memory || '4';
+    (settingsMemory as HTMLInputElement).value = settings.game?.memory || '4';
   }
   
-  const settingsWindowMode = document.getElementById('settings-window-mode');
+  const settingsWindowMode: HTMLElement | null = document.getElementById('settings-window-mode');
   if (settingsWindowMode) {
-    settingsWindowMode.value = settings.game?.windowMode || 'windowed';
+    (settingsWindowMode as HTMLInputElement).value = settings.game?.windowMode || 'windowed';
   }
   
-  const settingsTheme = document.getElementById('settings-theme');
+  const settingsTheme: HTMLElement | null = document.getElementById('settings-theme');
   if (settingsTheme) {
-    settingsTheme.value = settings.appearance?.theme || 'dark';
+    (settingsTheme as HTMLInputElement).value = settings.appearance?.theme || 'dark';
     applyTheme(settings.appearance?.theme || 'dark');
   }
   
-  const settingsScale = document.getElementById('settings-scale');
+  const settingsScale: HTMLElement | null = document.getElementById('settings-scale');
   if (settingsScale) {
-    settingsScale.value = settings.appearance?.scale || '100';
+    (settingsScale as HTMLInputElement).value = settings.appearance?.scale || '100';
     applyScale(settings.appearance?.scale || '100');
   }
   
-  const settingsNumInput = document.getElementById('num-threads');
-  if (settingsNumInput) {
-    settingsNumInput.value = settings.download?.maxConcurrent || 64;
+  const settingsNumInputEl: HTMLElement | null = document.getElementById('num-threads');
+  if (settingsNumInputEl) {
+    (settingsNumInputEl as HTMLInputElement).value = String(settings.download?.maxConcurrent || 64);
   }
   
-  const javaMirrorSelect = document.getElementById('java-mirror-select');
-  const customMirrorContainer = document.getElementById('custom-java-mirror-container');
-  const customMirrorUrl = document.getElementById('custom-java-mirror-url');
+  const javaMirrorSelect: HTMLElement | null = document.getElementById('java-mirror-select');
+  const customMirrorContainer: HTMLElement | null = document.getElementById('custom-java-mirror-container');
+  const customMirrorUrl: HTMLInputElement | null = document.getElementById('custom-java-mirror-url') as HTMLInputElement | null;
   if (javaMirrorSelect) {
-    javaMirrorSelect.value = settings.download?.javaMirror || 'tsinghua';
+    (javaMirrorSelect as HTMLInputElement).value = settings.download?.javaMirror || 'tsinghua';
     if (customMirrorContainer) {
-      customMirrorContainer.classList.toggle('hidden', javaMirrorSelect.value !== 'custom');
+      customMirrorContainer.classList.toggle('hidden', (javaMirrorSelect as HTMLInputElement).value !== 'custom');
     }
     if (customMirrorUrl) {
       customMirrorUrl.value = settings.download?.customJavaMirror || '';
     }
   }
   
-  const autoCheckUpdate = document.getElementById('auto-check-update');
+  const autoCheckUpdate: HTMLInputElement | null = document.getElementById('auto-check-update') as HTMLInputElement | null;
   if (autoCheckUpdate) {
     autoCheckUpdate.checked = settings.advanced?.autoCheckUpdate !== false;
   }
-
-  const preventMultipleLaunch = document.getElementById('prevent-multiple-launch');
+  const preventMultipleLaunch: HTMLInputElement | null = document.getElementById('prevent-multiple-launch') as HTMLInputElement | null;
   if (preventMultipleLaunch) {
     preventMultipleLaunch.checked = settings.advanced?.preventMultipleLaunch !== false;
   }
 
-  const autoClearLogs = document.getElementById('auto-clear-logs');
-  const logRetentionContainer = document.getElementById('log-retention-container');
-  const logRetentionValue = document.getElementById('log-retention-value');
-  const logRetentionUnit = document.getElementById('log-retention-unit');
+  const autoClearLogs: HTMLInputElement | null = document.getElementById('auto-clear-logs') as HTMLInputElement | null;
+  const logRetentionContainer: HTMLElement | null = document.getElementById('log-retention-container');
+  const logRetentionValue: HTMLInputElement | null = document.getElementById('log-retention-value') as HTMLInputElement | null;
+  const logRetentionUnit: HTMLElement | null = document.getElementById('log-retention-unit');
   
   if (autoClearLogs) {
     autoClearLogs.checked = settings.advanced?.autoClearLogs !== false;
@@ -917,64 +926,64 @@ async function reloadAllSettingsToUI() {
   }
   
   if (logRetentionValue) {
-    logRetentionValue.value = settings.advanced?.logRetentionValue || 7;
+    logRetentionValue.value = String(settings.advanced?.logRetentionValue || 7);
   }
   
   if (logRetentionUnit) {
-    logRetentionUnit.value = settings.advanced?.logRetentionUnit || 'day';
+    (logRetentionUnit as HTMLInputElement).value = settings.advanced?.logRetentionUnit || 'day';
   }
 
-  const playStartupAnimationEl = document.getElementById('play-startup-animation');
+  const playStartupAnimationEl: HTMLInputElement | null = document.getElementById('play-startup-animation') as HTMLInputElement | null;
   if (playStartupAnimationEl) {
     playStartupAnimationEl.checked = settings.appearance?.playStartupAnimation === true;
   }
 
-  const skipSplashEl = document.getElementById('skip-splash');
+  const skipSplashEl: HTMLInputElement | null = document.getElementById('skip-splash') as HTMLInputElement | null;
   if (skipSplashEl) {
     skipSplashEl.checked = settings.appearance?.skipSplash === true;
   }
 
-  const enableMoreEl = document.getElementById('enable-more');
+  const enableMoreEl: HTMLInputElement | null = document.getElementById('enable-more') as HTMLInputElement | null;
   if (enableMoreEl) {
     enableMoreEl.checked = settings.appearance?.enableMore !== false;
     updateMoreMenuVisibility(settings.appearance?.enableMore !== false);
   }
 
-  const developerModeEl = document.getElementById('developer-mode');
+  const developerModeEl: HTMLInputElement | null = document.getElementById('developer-mode') as HTMLInputElement | null;
   if (developerModeEl) {
     developerModeEl.checked = settings.advanced?.developerMode === true;
   }
 }
 
-function updateMoreMenuVisibility(enabled) {
-  const menuMore = document.getElementById('menu-more');
-  if (menuMore) {
-    menuMore.style.display = enabled ? '' : 'none';
+function updateMoreMenuVisibility(enabled: boolean): void {
+  const menuMoreEl: HTMLElement | null = document.getElementById('menu-more');
+  if (menuMoreEl) {
+    menuMoreEl.style.display = enabled ? '' : 'none';
   }
 }
 
-const enableMoreEl = document.getElementById('enable-more');
+const enableMoreEl: HTMLInputElement | null = document.getElementById('enable-more') as HTMLInputElement | null;
 if (enableMoreEl) {
-  enableMoreEl.addEventListener('change', async (e) => {
-    const enabled = e.target.checked;
+  enableMoreEl.addEventListener('change', async (e: Event): Promise<void> => {
+    const enabled: boolean = (e.target as HTMLInputElement).checked;
     updateMoreMenuVisibility(enabled);
     
     const settings = await loadSettings();
-    settings.appearance = settings.appearance || {};
-    settings.appearance.enableMore = enabled;
+    settings.appearance = settings.appearance || {} as any;
+    (settings.appearance as any).enableMore = enabled;
     await window.gpcl.saveSettings(settings);
   });
 }
 
 }
 
-function initChart() {
-  const ctx = document.getElementById('speedChart');
+function initChart(): void {
+  const ctx: HTMLCanvasElement | null = document.getElementById('speedChart') as HTMLCanvasElement | null;
   if (!ctx) return;
 
-  const chartCtx = ctx.getContext('2d');
+  const chartCtx: CanvasRenderingContext2D = ctx.getContext('2d')!;
 
-  const gradient = chartCtx.createLinearGradient(0, 0, 0, 180);
+  const gradient: CanvasGradient = chartCtx.createLinearGradient(0, 0, 0, 180);
   gradient.addColorStop(0, 'rgba(79, 195, 247, 0.3)');
   gradient.addColorStop(1, 'rgba(79, 195, 247, 0)');
 
@@ -1012,7 +1021,7 @@ function initChart() {
           borderWidth: 1,
           padding: 10,
           callbacks: {
-            label: function(context) {
+            label: function(context: any): string {
               return `速度: ${context.parsed.y.toFixed(2)} Mbps`;
             }
           }
@@ -1031,7 +1040,7 @@ function initChart() {
   });
 }
 
-function updateChart(speed) {
+function updateChart(speed: number): void {
   if (!speedChart) return;
 
   speedData.push(speed);
@@ -1039,13 +1048,13 @@ function updateChart(speed) {
 
   speedChart.data.datasets[0].data = speedData;
 
-  const maxSpeed = Math.max(...speedData, 1);
+  const maxSpeed: number = Math.max(...speedData, 1);
   speedChart.options.scales.y.suggestedMax = maxSpeed * 1.5;
 
   speedChart.update('none');
 }
 
-function resetChart() {
+function resetChart(): void {
   speedData = Array(40).fill(0);
   peakSpeed = 0;
 
@@ -1054,10 +1063,10 @@ function resetChart() {
     speedChart.update();
   }
 
-  const currentSpeedEl = document.getElementById('current-speed');
-  const peakSpeedEl = document.getElementById('peak-speed');
-  const progressFillEl = document.getElementById('progress-fill');
-  const progressTextEl = document.getElementById('progress-text');
+  const currentSpeedEl: HTMLElement | null = document.getElementById('current-speed');
+  const peakSpeedEl: HTMLElement | null = document.getElementById('peak-speed');
+  const progressFillEl: HTMLElement | null = document.getElementById('progress-fill');
+  const progressTextEl: HTMLElement | null = document.getElementById('progress-text');
 
   if (currentSpeedEl) currentSpeedEl.textContent = '0.00 Mbps';
   if (peakSpeedEl) peakSpeedEl.textContent = '0.00 Mbps';
@@ -1066,22 +1075,22 @@ function resetChart() {
 }
 
 
-function setStatus(text, type = 'info') {
-  statusDiv.textContent = text;
-  statusDiv.style.color =
+function setStatus(text: string, type: string = 'info'): void {
+  if (statusDiv) statusDiv.textContent = text;
+  if (statusDiv) statusDiv.style.color =
     type === 'error' ? '#ef5350' :
     type === 'success' ? '#66bb6a' :
     '#e0e0e0';
 }
 
-async function loadVersions(silent = false) {
+async function loadVersions(silent: boolean = false): Promise<void> {
   try {
-    let versions = [];
+    let versions: string[] = [];
 
     if (window.gpcl && typeof window.gpcl.scanVersions === 'function') {
       try {
         versions = await window.gpcl.scanVersions(null, silent);
-      } catch (e) {
+      } catch (e: any) {
         console.error('调用scanVersions失败:', e);
       }
     }
@@ -1104,30 +1113,30 @@ async function loadVersions(silent = false) {
     versionSelect.innerHTML = '<option value="">请选择版本</option>';
 
     if (!versions || versions.length === 0) {
-      const opt = document.createElement('option');
+      const opt: HTMLOptionElement = document.createElement('option');
       opt.disabled = true;
       opt.textContent = '未发现已安装的版本';
       versionSelect.appendChild(opt);
       return;
     }
 
-    versions.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+    versions.sort((a: string, b: string) => b.localeCompare(a, undefined, { numeric: true }));
 
     for (const v of versions) {
-      let displayName = `Minecraft ${v}`;
+      let displayName: string = `Minecraft ${v}`;
       if (window.gpcl && typeof window.gpcl.getVersionDisplayName === 'function') {
         try {
           displayName = await window.gpcl.getVersionDisplayName(v);
-        } catch (e) {
+        } catch (e: any) {
           console.warn(`获取版本显示名称失败: ${v}`, e);
         }
       }
-      const opt = document.createElement('option');
+      const opt: HTMLOptionElement = document.createElement('option');
       opt.value = v;
       opt.textContent = displayName;
       versionSelect.appendChild(opt);
     }
-  } catch (err) {
+  } catch (err: any) {
     if (!silent) {
       setStatus('扫描本地版本失败', 'error');
       showToast('扫描失败', err.message || String(err), 'error');
@@ -1137,51 +1146,51 @@ async function loadVersions(silent = false) {
   }
 }
 
-function updateLaunchButtonState(hasGame) {
-  const launchBtn = document.getElementById('launch-btn');
-  const launchText = launchBtn?.querySelector('.launch-text');
+function updateLaunchButtonState(hasGame: boolean): void {
+  const launchBtnEl: HTMLElement | null = document.getElementById('launch-btn');
+  const launchText: HTMLElement | null = launchBtnEl?.querySelector('.launch-text') as HTMLElement | null;
 
-  if (launchBtn && launchText) {
+  if (launchBtnEl && launchText) {
     if (hasGame) {
       launchText.textContent = '▶ 开始游戏';
-      launchBtn.dataset.mode = 'launch';
+      launchBtnEl.dataset.mode = 'launch';
       
-      launchBtn.classList.remove('no-game');
+      launchBtnEl.classList.remove('no-game');
     } else {
       launchText.textContent = '⏬ 前往下载';
-      launchBtn.dataset.mode = 'download';
+      launchBtnEl.dataset.mode = 'download';
       
-      launchBtn.classList.add('no-game');
+      launchBtnEl.classList.add('no-game');
     }
   }
 }
 
-const VERSION_HISTORY_FILE = 'gpcl_version_history.json';
-const VERSION_HISTORY_PATH = 'users';
+const VERSION_HISTORY_FILE: string = 'gpcl_version_history.json';
+const VERSION_HISTORY_PATH: string = 'users';
 
-async function getVersionHistory() {
+async function getVersionHistory(): Promise<Record<string, any>> {
   try {
     if (window.gpcl && typeof window.gpcl.readJsonFile === 'function') {
       const history = await window.gpcl.readJsonFile(VERSION_HISTORY_PATH, VERSION_HISTORY_FILE);
       return history || {};
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('从文件读取版本历史失败:', e);
   }
   return {};
 }
 
-async function saveVersionHistory(history) {
+async function saveVersionHistory(history: Record<string, any>): Promise<void> {
   if (window.gpcl && typeof window.gpcl.writeJsonFile === 'function') {
     try {
       await window.gpcl.writeJsonFile(VERSION_HISTORY_PATH, VERSION_HISTORY_FILE, history);
-    } catch (e) {
+    } catch (e: any) {
       console.error('写入版本历史到文件失败:', e);
     }
   }
 }
 
-async function recordVersionLaunch(versionId) {
+async function recordVersionLaunch(versionId: string): Promise<void> {
   try {
     const history = await getVersionHistory();
     if (!history[versionId]) {
@@ -1189,12 +1198,12 @@ async function recordVersionLaunch(versionId) {
     }
     history[versionId].lastLaunch = Date.now();
     await saveVersionHistory(history);
-  } catch (e) {
+  } catch (e: any) {
     console.error('记录版本启动时间失败:', e);
   }
 }
 
-async function recordVersionDownload(versionId) {
+async function recordVersionDownload(versionId: string): Promise<void> {
   try {
     const history = await getVersionHistory();
     if (!history[versionId]) {
@@ -1203,24 +1212,24 @@ async function recordVersionDownload(versionId) {
     history[versionId].downloadTime = Date.now();
     history[versionId].lastLaunch = Date.now(); 
     await saveVersionHistory(history);
-  } catch (e) {
+  } catch (e: any) {
     console.error('记录版本下载时间失败:', e);
   }
 }
 
-async function renderVersionSelectList() {
-  const container = document.getElementById('launch-version-list');
-  const countEl = document.getElementById('version-count');
+async function renderVersionSelectList(): Promise<void> {
+  const container: HTMLElement | null = document.getElementById('launch-version-list');
+  const countEl: HTMLElement | null = document.getElementById('version-count');
   
   if (!container) return;
   
   try {
-    let versions = [];
+    let versions: string[] = [];
 
     if (window.gpcl && typeof window.gpcl.scanVersions === 'function') {
       try {
         versions = await window.gpcl.scanVersions(null, true);
-      } catch (e) {
+      } catch (e: any) {
         console.error('调用scanVersions失败:', e);
       }
     }
@@ -1229,32 +1238,32 @@ async function renderVersionSelectList() {
     
     if (!versions || versions.length === 0) {
       container.innerHTML = '<div class="version-list-empty">暂无已安装的版本</div>';
-      countEl.textContent = '0 个版本';
+      if (countEl) countEl.textContent = '0 个版本';
       return;
     }
 
-    versions.sort((a, b) => {
-      const timeA = history[a]?.lastLaunch || history[a]?.downloadTime || 0;
-      const timeB = history[b]?.lastLaunch || history[b]?.downloadTime || 0;
+    versions.sort((a: string, b: string) => {
+      const timeA: number = history[a]?.lastLaunch || history[a]?.downloadTime || 0;
+      const timeB: number = history[b]?.lastLaunch || history[b]?.downloadTime || 0;
       return timeB - timeA;
     });
     
     container.innerHTML = '';
     
-    versions.forEach((versionId, index) => {
-      const item = document.createElement('div');
+    versions.forEach((versionId: string, index: number) => {
+      const item: HTMLDivElement = document.createElement('div');
       item.className = 'version-item';
       item.dataset.versionId = versionId;
 
-      const icon = index === 0 && (history[versionId]?.lastLaunch || history[versionId]?.downloadTime) 
+      const icon: string = index === 0 && (history[versionId]?.lastLaunch || history[versionId]?.downloadTime) 
         ? '⭐' : '📦';
 
-      const lastTime = history[versionId]?.lastLaunch || history[versionId]?.downloadTime;
-      let timeText = '';
+      const lastTime: number = history[versionId]?.lastLaunch || history[versionId]?.downloadTime;
+      let timeText: string = '';
       if (lastTime) {
-        const date = new Date(lastTime);
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
+        const date: Date = new Date(lastTime);
+        const now: Date = new Date();
+        const diff: number = now.getTime() - date.getTime();
         
         if (diff < 60000) {
           timeText = '刚刚';
@@ -1280,35 +1289,35 @@ async function renderVersionSelectList() {
       container.appendChild(item);
     });
     
-    countEl.textContent = `${versions.length} 个版本`;
+    if (countEl) countEl.textContent = `${versions.length} 个版本`;
 
     if (!selectedVersionId && versions.length > 0) {
       selectVersion(versions[0]);
     }
-  } catch (err) {
+  } catch (err: any) {
     container.innerHTML = '<div class="version-list-empty">加载版本列表失败</div>';
-    countEl.textContent = '加载失败';
+    if (countEl) countEl.textContent = '加载失败';
   }
 }
 
-function selectVersion(versionId) {
+function selectVersion(versionId: string): void {
   selectedVersionId = versionId;
 
-  const items = document.querySelectorAll('.version-item');
-  items.forEach(item => {
-    item.classList.toggle('selected', item.dataset.versionId === versionId);
+  const items: NodeListOf<Element> = document.querySelectorAll('.version-item');
+  items.forEach((item: Element) => {
+    item.classList.toggle('selected', (item as HTMLElement).dataset.versionId === versionId);
   });
 
-  const infoEl = document.getElementById('selected-version-info');
-  const nameEl = document.getElementById('selected-version-name');
+  const infoEl: HTMLElement | null = document.getElementById('selected-version-info');
+  const nameEl: HTMLElement | null = document.getElementById('selected-version-name');
 
   if (infoEl && nameEl) {
     nameEl.textContent = `Minecraft ${versionId}`;
     infoEl.classList.remove('hidden');
   }
 
-  const displayEl = document.getElementById('selected-version-display');
-  const textEl = document.getElementById('selected-version-text');
+  const displayEl: HTMLElement | null = document.getElementById('selected-version-display');
+  const textEl: HTMLElement | null = document.getElementById('selected-version-text');
   if (displayEl && textEl) {
     textEl.textContent = versionId;
     displayEl.classList.remove('hidden');
@@ -1317,24 +1326,24 @@ function selectVersion(versionId) {
   updateLaunchButtonState(true);
 }
 
-async function isVersionInstalled(versionId) {
+async function isVersionInstalled(versionId: string): Promise<boolean> {
   try {
-    const versions = await window.gpcl.scanVersions(null, true);
+    const versions: string[] = await window.gpcl.scanVersions(null, true);
     return versions.includes(versionId);
   } catch {
     return false;
   }
 }
 
-let allVersions = [];
-let selectedVersionId = null;
+let allVersions: any[] = [];
+let selectedVersionId: string | null = null;
 
-let modLoaderState = {
+let modLoaderState: any = {
   forge: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null },
   optifine: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null }
 };
 
-const MOD_LOADER_COMPATIBILITY = {
+const MOD_LOADER_COMPATIBILITY: Record<string, string[]> = {
   
   forge: ['fabric'],
   fabric: ['forge'],
@@ -1342,12 +1351,12 @@ const MOD_LOADER_COMPATIBILITY = {
   optifine: ['forge', 'fabric']
 };
 
-async function checkForgeAvailability(mcVersion) {
+async function checkForgeAvailability(mcVersion: string): Promise<{ available: boolean; versions: any[] }> {
   try {
     
-    const parts = mcVersion.split('.');
-    const major = parseInt(parts[0], 10) || 1;
-    const minor = parseInt(parts[1], 10) || 0;
+    const parts: string[] = mcVersion.split('.');
+    const major: number = parseInt(parts[0], 10) || 1;
+    const minor: number = parseInt(parts[1], 10) || 0;
 
     if (major === 1 && minor < 1) {
       return { available: false, versions: [] };
@@ -1358,13 +1367,13 @@ async function checkForgeAvailability(mcVersion) {
       return { available: result.versions.length > 0, versions: result.versions };
     }
     return { available: false, versions: [] };
-  } catch (e) {
+  } catch (e: any) {
     console.error('检测 Forge 可用性失败:', e);
     return { available: false, versions: [] };
   }
 }
 
-async function checkAllModLoaders(mcVersion) {
+async function checkAllModLoaders(mcVersion: string): Promise<void> {
   
   modLoaderState = {
     forge: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null },
@@ -1380,27 +1389,27 @@ async function checkAllModLoaders(mcVersion) {
   updateModLoaderUI();
 }
 
-async function checkOptiFineAvailability(mcVersion) {
+async function checkOptiFineAvailability(mcVersion: string): Promise<{ available: boolean; versions: any[] }> {
   try {
     const result = await window.gpcl.getOptiFineVersions(mcVersion);
     if (result.success) {
       return { available: result.versions.length > 0, versions: result.versions };
     }
     return { available: false, versions: [] };
-  } catch (e) {
+  } catch (e: any) {
     console.error('检测 OptiFine 可用性失败:', e);
     return { available: false, versions: [] };
   }
 }
 
-function updateModLoaderUI() {
-  for (const [loader, state] of Object.entries(modLoaderState)) {
-    const card = document.getElementById(`${loader}-option`);
-    const badge = document.getElementById(`${loader}-badge`);
-    const content = document.getElementById(`${loader}-content`);
-    const loading = document.getElementById(`${loader}-loading`);
-    const versionsContainer = document.getElementById(`${loader}-versions`);
-    const error = document.getElementById(`${loader}-error`);
+function updateModLoaderUI(): void {
+  for (const [loader, state] of Object.entries(modLoaderState) as [string, any][]) {
+    const card: HTMLElement | null = document.getElementById(`${loader}-option`);
+    const badge: HTMLElement | null = document.getElementById(`${loader}-badge`);
+    const content: HTMLElement | null = document.getElementById(`${loader}-content`);
+    const loading: HTMLElement | null = document.getElementById(`${loader}-loading`);
+    const versionsContainer: HTMLElement | null = document.getElementById(`${loader}-versions`);
+    const error: HTMLElement | null = document.getElementById(`${loader}-error`);
     
     if (!card || !badge) continue;
 
@@ -1415,30 +1424,30 @@ function updateModLoaderUI() {
     }
 
     if (state.expanded && state.available) {
-      content.classList.remove('hidden');
-      loading.classList.add('hidden');
-      error.classList.add('hidden');
-      versionsContainer.classList.remove('hidden');
+      if (content) content.classList.remove('hidden');
+      if (loading) loading.classList.add('hidden');
+      if (error) error.classList.add('hidden');
+      if (versionsContainer) versionsContainer.classList.remove('hidden');
       renderModLoaderVersionList(loader, state.versions);
     } else if (state.expanded && !state.available) {
-      content.classList.remove('hidden');
-      loading.classList.add('hidden');
-      versionsContainer.classList.add('hidden');
-      error.classList.remove('hidden');
+      if (content) content.classList.remove('hidden');
+      if (loading) loading.classList.add('hidden');
+      if (versionsContainer) versionsContainer.classList.add('hidden');
+      if (error) error.classList.remove('hidden');
     } else {
-      content.classList.add('hidden');
+      if (content) content.classList.add('hidden');
     }
   }
 }
 
-function renderModLoaderVersionList(loader, versions) {
-  const container = document.getElementById(`${loader}-versions`);
+function renderModLoaderVersionList(loader: string, versions: any[]): void {
+  const container: HTMLElement | null = document.getElementById(`${loader}-versions`);
   if (!container) return;
   
   container.innerHTML = '';
   
-  versions.forEach((version, index) => {
-    const item = document.createElement('div');
+  versions.forEach((version: any, index: number) => {
+    const item: HTMLDivElement = document.createElement('div');
     item.className = 'detail-option-version-item';
     item.dataset.versionId = version.id;
     item.dataset.version = version.version;
@@ -1458,7 +1467,7 @@ function renderModLoaderVersionList(loader, versions) {
   });
 }
 
-function selectModLoaderVersion(loader, version, versionId) {
+function selectModLoaderVersion(loader: string, version: string, versionId: string): void {
   const state = modLoaderState[loader];
 
   if (state.selectedVersionId === versionId) {
@@ -1469,21 +1478,21 @@ function selectModLoaderVersion(loader, version, versionId) {
     state.selected = version;
   }
 
-  const container = document.getElementById(`${loader}-versions`);
+  const container: HTMLElement | null = document.getElementById(`${loader}-versions`);
   if (container) {
-    const items = container.querySelectorAll('.detail-option-version-item');
-    items.forEach(item => {
-      item.classList.toggle('selected', item.dataset.versionId === state.selectedVersionId);
+    const items: NodeListOf<Element> = container.querySelectorAll('.detail-option-version-item');
+    items.forEach((item: Element) => {
+      item.classList.toggle('selected', (item as HTMLElement).dataset.versionId === state.selectedVersionId);
     });
   }
 }
 
-function updateIncompatibilityUI() {
+function updateIncompatibilityUI(): void {
   
 }
 
-function getLoaderDisplayName(loader) {
-  const names = {
+function getLoaderDisplayName(loader: string): string {
+  const names: Record<string, string> = {
     forge: 'Forge',
     fabric: 'Fabric',
     optifine: 'OptiFine'
@@ -1491,11 +1500,11 @@ function getLoaderDisplayName(loader) {
   return names[loader] || loader;
 }
 
-function toggleModLoader(loader) {
+function toggleModLoader(loader: string): void {
   const state = modLoaderState[loader];
-  const card = document.getElementById(`${loader}-option`);
-  const content = document.getElementById(`${loader}-content`);
-  const arrow = card?.querySelector('.detail-option-arrow');
+  const card: HTMLElement | null = document.getElementById(`${loader}-option`);
+  const content: HTMLElement | null = document.getElementById(`${loader}-content`);
+  const arrow: HTMLElement | null = card?.querySelector('.detail-option-arrow') as HTMLElement | null;
   
   if (!content) return;
 
@@ -1512,32 +1521,32 @@ function toggleModLoader(loader) {
   updateModLoaderUI();
 }
 
-function bindModLoaderEvents() {
+function bindModLoaderEvents(): void {
   for (const loader of Object.keys(modLoaderState)) {
-    const card = document.getElementById(`${loader}-option`);
+    const card: HTMLElement | null = document.getElementById(`${loader}-option`);
     if (!card) continue;
     
-    const header = card.querySelector('.detail-option-header');
+    const header: HTMLElement | null = card.querySelector('.detail-option-header');
     if (header) {
       header.addEventListener('click', () => toggleModLoader(loader));
     }
   }
 }
 
-function resetModLoaderState() {
+function resetModLoaderState(): void {
   modLoaderState = {
     forge: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null },
     optifine: { available: false, versions: [], selected: null, expanded: false, selectedVersionId: null }
   };
 
   for (const loader of Object.keys(modLoaderState)) {
-    const card = document.getElementById(`${loader}-option`);
-    const badge = document.getElementById(`${loader}-badge`);
-    const content = document.getElementById(`${loader}-content`);
-    const loading = document.getElementById(`${loader}-loading`);
-    const versions = document.getElementById(`${loader}-versions`);
-    const error = document.getElementById(`${loader}-error`);
-    const arrow = card?.querySelector('.detail-option-arrow');
+    const card: HTMLElement | null = document.getElementById(`${loader}-option`);
+    const badge: HTMLElement | null = document.getElementById(`${loader}-badge`);
+    const content: HTMLElement | null = document.getElementById(`${loader}-content`);
+    const loading: HTMLElement | null = document.getElementById(`${loader}-loading`);
+    const versions: HTMLElement | null = document.getElementById(`${loader}-versions`);
+    const error: HTMLElement | null = document.getElementById(`${loader}-error`);
+    const arrow: HTMLElement | null = card?.querySelector('.detail-option-arrow') as HTMLElement | null;
     
     if (card) {
       card.classList.remove('not-available', 'incompatible');
@@ -1554,40 +1563,40 @@ function resetModLoaderState() {
   }
 }
 
-function getCategoryLabel(type) {
-  const map = { release: '正式版', snapshot: '快照版', old_beta: '老版本 Beta', old_alpha: '老版本 Alpha' };
+function getCategoryLabel(type: string): string {
+  const map: Record<string, string> = { release: '正式版', snapshot: '快照版', old_beta: '老版本 Beta', old_alpha: '老版本 Alpha' };
   return map[type] || type;
 }
 
-function getCategoryIcon(type) {
-  const map = { release: '🟢', snapshot: '🟡', old_beta: '🟠', old_alpha: '🔴' };
+function getCategoryIcon(type: string): string {
+  const map: Record<string, string> = { release: '🟢', snapshot: '🟡', old_beta: '🟠', old_alpha: '🔴' };
   return map[type] || '⚪';
 }
 
-function formatDate(dateStr) {
+function formatDate(dateStr: string): string {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
+  const d: Date = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function renderVersionList(versionMap) {
+function renderVersionList(versionMap: Record<string, any[]>): void {
   if (!versionListContainer) return;
   versionListContainer.innerHTML = '';
 
-  const categoryOrder = ['release', 'snapshot', 'old_beta', 'old_alpha'];
-  let totalCount = 0;
+  const categoryOrder: string[] = ['release', 'snapshot', 'old_beta', 'old_alpha'];
+  let totalCount: number = 0;
 
-  categoryOrder.forEach(type => {
+  categoryOrder.forEach((type: string) => {
     const items = versionMap[type];
     if (!items || items.length === 0) return;
     totalCount += items.length;
 
-    const categoryEl = document.createElement('div');
+    const categoryEl: HTMLDivElement = document.createElement('div');
     categoryEl.className = 'version-category';
     categoryEl.dataset.category = type;
 
-    const isRelease = type === 'release';
-    const header = document.createElement('div');
+    const isRelease: boolean = type === 'release';
+    const header: HTMLDivElement = document.createElement('div');
     header.className = 'version-category-header';
     header.innerHTML = `
       <span class="version-category-arrow ${isRelease ? '' : 'collapsed'}">▼</span>
@@ -1596,20 +1605,20 @@ function renderVersionList(versionMap) {
       <span class="version-category-count">${items.length} 个版本</span>
     `;
 
-    const body = document.createElement('div');
+    const body: HTMLDivElement = document.createElement('div');
     body.className = `version-category-items ${isRelease ? '' : 'collapsed'}`;
 
-    items.forEach(v => {
-      const item = document.createElement('div');
+    items.forEach((v: any) => {
+      const item: HTMLDivElement = document.createElement('div');
       item.className = 'version-item';
       item.dataset.versionId = v.id;
       
-      const displayName = v.displayName || v.id;
+      const displayName: string = v.displayName || v.id;
       item.innerHTML = `
         <span class="version-item-id">${displayName}</span>
         <span class="version-item-time">${formatDate(v.releaseTime)}</span>
       `;
-      item.addEventListener('click', (e) => {
+      item.addEventListener('click', (e: Event) => {
         e.stopPropagation();
         showVersionDetail(v);
       });
@@ -1617,9 +1626,9 @@ function renderVersionList(versionMap) {
     });
 
     header.addEventListener('click', () => {
-      const arrow = header.querySelector('.version-category-arrow');
-      const isCollapsed = body.classList.toggle('collapsed');
-      arrow.classList.toggle('collapsed', isCollapsed);
+      const arrow: HTMLElement | null = header.querySelector('.version-category-arrow');
+      const isCollapsed: boolean = body.classList.toggle('collapsed');
+      if (arrow) arrow.classList.toggle('collapsed', isCollapsed);
     });
 
     categoryEl.appendChild(header);
@@ -1632,17 +1641,17 @@ function renderVersionList(versionMap) {
   }
 }
 
-function showVersionDetail(version) {
+function showVersionDetail(version: any): void {
   selectedVersionId = version.id;
   if (versionListSection) versionListSection.classList.add('hidden');
   if (versionDetailPage) versionDetailPage.classList.remove('hidden');
 
   if (detailDownloadBtn) detailDownloadBtn.disabled = false;
 
-  const idEl = document.getElementById('detail-version-id');
-  const typeEl = document.getElementById('detail-version-type');
-  const typeLabelEl = document.getElementById('detail-type-label');
-  const timeEl = document.getElementById('detail-release-time');
+  const idEl: HTMLElement | null = document.getElementById('detail-version-id');
+  const typeEl: HTMLElement | null = document.getElementById('detail-version-type');
+  const typeLabelEl: HTMLElement | null = document.getElementById('detail-type-label');
+  const timeEl: HTMLElement | null = document.getElementById('detail-release-time');
 
   if (idEl) idEl.textContent = `Minecraft ${version.id}`;
   if (typeEl) typeEl.textContent = getCategoryLabel(version.type);
@@ -1653,26 +1662,26 @@ function showVersionDetail(version) {
   checkAllModLoaders(version.id);
 }
 
-function hideVersionDetail() {
+function hideVersionDetail(): void {
   selectedVersionId = null;
   if (versionDetailPage) versionDetailPage.classList.add('hidden');
   if (versionListSection) versionListSection.classList.remove('hidden');
 }
 
-async function loadRemoteVersions() {
-  const refreshBtn = document.getElementById('refresh-btn-page');
+async function loadRemoteVersions(): Promise<void> {
+  const refreshBtn: HTMLElement | null = document.getElementById('refresh-btn-page');
   try {
     if (refreshBtn) refreshBtn.classList.add('hidden');
     if (versionListContainer) {
       versionListContainer.innerHTML = '<div class="version-list-loading">正在加载版本列表...</div>';
     }
     
-    let versions = [];
+    let versions: any[] = [];
 
     if (window.gpcl && typeof window.gpcl.getVersionManifest === 'function') {
       try {
         versions = await window.gpcl.getVersionManifest();
-      } catch (e) {
+      } catch (e: any) {
         console.error('调用getVersionManifest失败:', e);
       }
     }
@@ -1685,7 +1694,7 @@ async function loadRemoteVersions() {
             versions = cached;
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('从文件缓存获取远程版本列表失败:', e);
       }
     }
@@ -1699,8 +1708,8 @@ async function loadRemoteVersions() {
       return;
     }
 
-    const versionMap = {};
-    versions.forEach(v => {
+    const versionMap: Record<string, any[]> = {};
+    versions.forEach((v: any) => {
       if (!versionMap[v.type]) versionMap[v.type] = [];
       versionMap[v.type].push(v);
     });
@@ -1709,14 +1718,14 @@ async function loadRemoteVersions() {
       if (window.gpcl && typeof window.gpcl.writeJsonFile === 'function') {
         await window.gpcl.writeJsonFile('cache', 'remote_versions.json', versions);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('保存远程版本列表到缓存失败:', e);
     }
 
     allVersions = versions;
     renderVersionList(versionMap);
     setStatus('远程版本列表已加载');
-  } catch (err) {
+  } catch (err: any) {
     setStatus('无法获取远程版本列表，请检查网络', 'error');
     showToast('版本列表加载失败', err.message || '请检查网络连接', 'error', 'remote-versions-error');
     if (versionListContainer) {
@@ -1726,10 +1735,10 @@ async function loadRemoteVersions() {
   }
 }
 
-async function launchGame() {
+async function launchGame(): Promise<void> {
   
-  const launchBtn = document.getElementById('launch-btn');
-  const mode = launchBtn?.dataset.mode || 'launch';
+  const launchBtnEl: HTMLElement | null = document.getElementById('launch-btn');
+  const mode: string = (launchBtnEl as any)?.dataset.mode || 'launch';
   
   if (mode === 'download') {
     
@@ -1739,9 +1748,9 @@ async function launchGame() {
   }
 
   setStatus('[动画] launchGame 函数被调用了');
-  const username = usernameInput.value.trim() || 'GPCL_Player';
+  const username: string = (usernameInput?.value || '').trim() || 'GPCL_Player';
 
-  const versionId = selectedVersionId;
+  const versionId: string | null = selectedVersionId;
 
   if (!versionId) {
     setStatus('请先选择已安装的版本', 'error');
@@ -1754,7 +1763,7 @@ async function launchGame() {
     await window.gpcl.savePlayerName(username);
   }
 
-  launchBtn.disabled = true;
+  if (launchBtnEl) (launchBtnEl as HTMLButtonElement).disabled = true;
 
   showLaunchAnimation(versionId);
 
@@ -1764,8 +1773,8 @@ async function launchGame() {
     setStatus('[动画] 开始启动游戏');
 
     const settings = await loadSettings();
-    let windowMode = settings.game?.windowMode || 'windowed';
-    let welcomeAnimPlaying = false;
+    let windowMode: string = settings.game?.windowMode || 'windowed';
+    let welcomeAnimPlaying: boolean = false;
     
     if (settings.appearance?.playStartupAnimation && window.gpcl && window.gpcl.playStartupAnimation) {
       setStatus('[启动动画] 正在播放欢迎动画...');
@@ -1774,7 +1783,7 @@ async function launchGame() {
       
       settings.appearance.playStartupAnimation = false;
       await gpcl.saveSettings(settings);
-      const playStartupEl = document.getElementById('play-startup-animation');
+      const playStartupEl: HTMLInputElement | null = document.getElementById('play-startup-animation') as HTMLInputElement | null;
       if (playStartupEl) playStartupEl.checked = false;
       
       await window.gpcl.playStartupAnimation();
@@ -1785,9 +1794,12 @@ async function launchGame() {
     
     const result = await window.gpcl.launch({
       versionId,
-      username,
+      username: msAuthData ? msAuthData.username : username,
       gameDir,
-      windowMode
+      windowMode,
+      authUuid: msAuthData?.uuid,
+      authAccessToken: msAuthData?.accessToken,
+      authUserType: msAuthData ? 'msa' : undefined
     });
 
     if (result.success) {
@@ -1821,7 +1833,7 @@ async function launchGame() {
       setStatus(result.error, 'error');
       showToast('启动失败', result.error, 'error', 'game-launch-failed');
     }
-  } catch (err) {
+  } catch (err: any) {
     if (welcomeAnimPlaying && window.gpcl && window.gpcl.dismissStartupAnimation) {
       window.gpcl.dismissStartupAnimation();
     }
@@ -1829,16 +1841,16 @@ async function launchGame() {
     setStatus('启动出错', 'error');
     showToast('启动出错', err.message, 'error', 'launch-error');
   } finally {
-    launchBtn.disabled = false;
+    if (launchBtnEl) (launchBtnEl as HTMLButtonElement).disabled = false;
   }
 }
 
-async function showLaunchAnimation(versionId) {
+async function showLaunchAnimation(versionId: string): Promise<void> {
   try {
-    const overlay = document.getElementById('launch-animation-overlay');
-    const statusText = document.getElementById('launch-status-text');
-    const versionInfo = document.getElementById('launch-version-info');
-    const progressFill = document.getElementById('launch-progress-fill');
+    const overlay: HTMLElement | null = document.getElementById('launch-animation-overlay');
+    const statusText: HTMLElement | null = document.getElementById('launch-status-text');
+    const versionInfo: HTMLElement | null = document.getElementById('launch-version-info');
+    const progressFill: HTMLElement | null = document.getElementById('launch-progress-fill');
     
     if (overlay) {
       overlay.classList.remove('hidden', 'fade-out', 'launch-success');
@@ -1855,11 +1867,11 @@ async function showLaunchAnimation(versionId) {
       statusText.textContent = '正在启动游戏...';
     }
 
-    let displayName = versionId;
+    let displayName: string = versionId;
     if (window.gpcl && typeof window.gpcl.getLaunchDisplayName === 'function') {
       try {
         displayName = await window.gpcl.getLaunchDisplayName(versionId);
-      } catch (e) {
+      } catch (e: any) {
         console.warn(`获取启动显示名称失败: ${versionId}`, e);
       }
     }
@@ -1874,12 +1886,12 @@ async function showLaunchAnimation(versionId) {
     
     simulateLaunchProgress();
     showRandomTip();
-  } catch (err) {
+  } catch (err: any) {
     setStatus('[动画] 显示启动动画失败: ' + err.message, 'error');
   }
 }
 
-const launchTips = [
+const launchTips: string[] = [
   'Minecraft 最初由 Markus "Notch" Persson 于 2009 年独立开发，最初版本仅用 6 天完成。',
   'Minecraft 的苦力怕（Creeper）是 Notch 在尝试制作猪模型时，因搞错长宽比而意外诞生的。',
   '末影人（Enderman）会随机搬运一些方块，这是参考了现实中的都市传说 Slender Man。',
@@ -1913,27 +1925,27 @@ const launchTips = [
   'GPCL 是云云一个人开发的启动器，并没有什么所谓的开发团队。',
 ];
 
-function showRandomTip() {
-  const tipText = document.getElementById('launch-tip-text');
+function showRandomTip(): void {
+  const tipText: HTMLElement | null = document.getElementById('launch-tip-text');
   if (!tipText) return;
   
-  const randomIndex = Math.floor(Math.random() * launchTips.length);
+  const randomIndex: number = Math.floor(Math.random() * launchTips.length);
   tipText.textContent = launchTips[randomIndex];
 }
 
-function simulateLaunchProgress() {
-  const progressFill = document.getElementById('launch-progress-fill');
-  const statusText = document.getElementById('launch-status-text');
+function simulateLaunchProgress(): void {
+  const progressFill: HTMLElement | null = document.getElementById('launch-progress-fill');
+  const statusText: HTMLElement | null = document.getElementById('launch-status-text');
   
-  let progress = 0;
-  const statusMessages = [
+  let progress: number = 0;
+  const statusMessages: string[] = [
     '正在检查游戏文件...',
     '正在准备Java运行时...',
     '正在初始化游戏环境...',
     '正在启动游戏窗口...'
   ];
   
-  const interval = setInterval(() => {
+  const interval: ReturnType<typeof setInterval> = setInterval(() => {
     
     progress += Math.random() * 15 + 5;
     
@@ -1945,7 +1957,7 @@ function simulateLaunchProgress() {
       progressFill.style.width = `${progress}%`;
     }
 
-    const messageIndex = Math.floor(progress / 25);
+    const messageIndex: number = Math.floor(progress / 25);
     if (statusText && messageIndex < statusMessages.length) {
       statusText.textContent = statusMessages[messageIndex];
     }
@@ -1954,18 +1966,18 @@ function simulateLaunchProgress() {
   window.launchProgressInterval = interval;
 }
 
-let gameWindowResolve = null;
-let gameWindowTimeout = null;
+let gameWindowResolve: (() => void) | null = null;
+let gameWindowTimeout: ReturnType<typeof setTimeout> | null = null;
 
-function setupGameWindowListener() {
+function setupGameWindowListener(): void {
   
   if (window.gpcl && window.gpcl.removeAllListeners) {
     window.gpcl.removeAllListeners();
   }
 
   if (window.gpcl && window.gpcl.onConfirmCloseWhileDownloading) {
-    window.gpcl.onConfirmCloseWhileDownloading(async () => {
-      const result = await showDialog({
+    window.gpcl.onConfirmCloseWhileDownloading(async (): Promise<void> => {
+      const result: boolean = await showDialog({
         type: 'confirm',
         title: '确认关闭',
         message: '当前正在下载中，关闭会停止下载并清理已下载的文件。确定要关闭吗？如有不完整的"libraries"需自行清理。'
@@ -1984,10 +1996,10 @@ function setupGameWindowListener() {
   }
 
   if (window.gpcl && window.gpcl.onGameWindowCreated) {
-    window.gpcl.onGameWindowCreated((data) => {
+    window.gpcl.onGameWindowCreated((data: any): void => {
       setStatus('[动画] 收到游戏窗口创建事件');
       if (gameWindowResolve) {
-        clearTimeout(gameWindowTimeout);
+        if (gameWindowTimeout) clearTimeout(gameWindowTimeout);
         gameWindowResolve();
         gameWindowResolve = null;
         gameWindowTimeout = null;
@@ -1997,7 +2009,7 @@ function setupGameWindowListener() {
   }
 }
 
-function waitForGameWindow() {
+function waitForGameWindow(): Promise<void> {
   return new Promise((resolve) => {
     gameWindowResolve = resolve;
     
@@ -2010,11 +2022,11 @@ function waitForGameWindow() {
   });
 }
 
-function showLaunchSuccess() {
+function showLaunchSuccess(): void {
   try {
-    const overlay = document.getElementById('launch-animation-overlay');
-    const pickaxe = document.getElementById('pickaxe');
-    const block = document.getElementById('block');
+    const overlay: HTMLElement | null = document.getElementById('launch-animation-overlay');
+    const pickaxe: HTMLElement | null = document.getElementById('pickaxe');
+    const block: HTMLElement | null = document.getElementById('block');
     
     if (overlay) {
       overlay.classList.add('launch-success');
@@ -2026,23 +2038,23 @@ function showLaunchSuccess() {
     }
 
     createParticles();
-  } catch (err) {
+  } catch (err: any) {
     setStatus('[动画] 显示成功动画失败: ' + err.message, 'error');
   }
 }
 
-function createParticles() {
-  const particlesContainer = document.getElementById('particles');
+function createParticles(): void {
+  const particlesContainer: HTMLElement | null = document.getElementById('particles');
   if (!particlesContainer) return;
 
   particlesContainer.innerHTML = '';
 
   for (let i = 0; i < 12; i++) {
-    const particle = document.createElement('div');
+    const particle: HTMLDivElement = document.createElement('div');
     particle.className = 'particle';
 
-    const angle = (Math.PI * 2 * i) / 12;
-    const distance = 50 + Math.random() * 50;
+    const angle: number = (Math.PI * 2 * i) / 12;
+    const distance: number = 50 + Math.random() * 50;
     particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
     particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
 
@@ -2054,9 +2066,9 @@ function createParticles() {
   }
 }
 
-function hideLaunchAnimation() {
+function hideLaunchAnimation(): void {
   try {
-    const overlay = document.getElementById('launch-animation-overlay');
+    const overlay: HTMLElement | null = document.getElementById('launch-animation-overlay');
     
     if (overlay) {
       overlay.classList.remove('show');
@@ -2074,21 +2086,21 @@ function hideLaunchAnimation() {
       clearInterval(window.launchProgressInterval);
       window.launchProgressInterval = null;
     }
-  } catch (err) {
+  } catch (err: any) {
     setStatus('[动画] 隐藏启动动画失败: ' + err.message, 'error');
   }
 }
 
-async function startDownload(versionId) {
+async function startDownload(versionId: string): Promise<void> {
   if (!versionId) { setStatus('请先选择要下载的版本', 'error'); return; }
 
-  const installed = await isVersionInstalled(versionId);
+  const installed: boolean = await isVersionInstalled(versionId);
 
-  let selectedModLoader = null;
-  let selectedModLoaderVersion = null;
-  let modLoaderName = '';
+  let selectedModLoader: string | null = null;
+  let selectedModLoaderVersion: string | null = null;
+  let modLoaderName: string = '';
   
-  for (const [loader, state] of Object.entries(modLoaderState)) {
+  for (const [loader, state] of Object.entries(modLoaderState) as [string, any][]) {
     if (state.selectedVersionId) {
       selectedModLoader = loader;
       selectedModLoaderVersion = state.selectedVersionId;
@@ -2107,22 +2119,22 @@ async function startDownload(versionId) {
   hideVersionDetail();
   showPage('download');
 
-  const scrollContainer = document.querySelector('.main-content');
+  const scrollContainer: HTMLElement | null = document.querySelector('.main-content') as HTMLElement | null;
   if (scrollContainer) {
     scrollContainer.scrollTop = 0;
   }
 
-  const downloadStatusEl = document.getElementById('download-status');
-  const filenameEl = document.getElementById('download-filename');
-  const cancelBtn = document.getElementById('cancel-download-btn');
+  const downloadStatusEl: HTMLElement | null = document.getElementById('download-status');
+  const filenameEl: HTMLElement | null = document.getElementById('download-filename');
+  const cancelBtn: HTMLElement | null = document.getElementById('cancel-download-btn');
 
   if (cancelBtn) {
     cancelBtn.textContent = '取消下载';
     cancelBtn.classList.remove('complete');
-    cancelBtn.disabled = false;
+    (cancelBtn as HTMLButtonElement).disabled = false;
   }
 
-  let displayName = `Minecraft ${versionId}`;
+  let displayName: string = `Minecraft ${versionId}`;
   if (selectedModLoader) {
     displayName = `${modLoaderName} ${versionId}`;
   }
@@ -2132,8 +2144,8 @@ async function startDownload(versionId) {
 
   window.gpcl.removeAllListeners();
 
-  window.gpcl.onConfirmCloseWhileDownloading(async () => {
-    const result = await showDialog({
+  window.gpcl.onConfirmCloseWhileDownloading(async (): Promise<void> => {
+    const result: boolean = await showDialog({
       type: 'confirm',
       title: '确认关闭',
       message: '当前正在下载中，关闭会停止下载并清理已下载的文件。确定要关闭吗？如有不完整的"libraries"需自行清理。'
@@ -2150,18 +2162,18 @@ async function startDownload(versionId) {
     }
   });
 
-  let lastTime = Date.now();
-  let lastBytes = 0;
-  let lastLabel = '';
+  let lastTime: number = Date.now();
+  let lastBytes: number = 0;
+  let lastLabel: string = '';
 
-  window.gpcl.onDownloadProgress((data) => {
-    const currentTime = Date.now();
-    const timeDiff = (currentTime - lastTime) / 1000;
+  window.gpcl.onDownloadProgress((data: any): void => {
+    const currentTime: number = Date.now();
+    const timeDiff: number = (currentTime - lastTime) / 1000;
 
-    const currentSpeedEl = document.getElementById('current-speed');
-    const peakSpeedEl = document.getElementById('peak-speed');
-    const progressFillEl = document.getElementById('progress-fill');
-    const progressTextEl = document.getElementById('progress-text');
+    const currentSpeedEl: HTMLElement | null = document.getElementById('current-speed');
+    const peakSpeedEl: HTMLElement | null = document.getElementById('peak-speed');
+    const progressFillEl: HTMLElement | null = document.getElementById('progress-fill');
+    const progressTextEl: HTMLElement | null = document.getElementById('progress-text');
 
     if (data.label && data.label !== lastLabel) {
       lastLabel = data.label;
@@ -2170,13 +2182,13 @@ async function startDownload(versionId) {
     }
 
     if (timeDiff >= 0.5 && data.bytesDownloaded !== undefined) {
-      const bytesDiff = data.bytesDownloaded - lastBytes;
+      const bytesDiff: number = data.bytesDownloaded - lastBytes;
       if (bytesDiff < 0) {
         lastBytes = data.bytesDownloaded;
         lastTime = currentTime;
         return;
       }
-      const speedBps = Math.max(0, (bytesDiff * 8) / timeDiff / 1000000);
+      const speedBps: number = Math.max(0, (bytesDiff * 8) / timeDiff / 1000000);
 
       if (currentSpeedEl) currentSpeedEl.textContent = speedBps.toFixed(2) + ' Mbps';
 
@@ -2191,7 +2203,7 @@ async function startDownload(versionId) {
       lastBytes = data.bytesDownloaded;
     }
 
-    const percent = data.percent || 0;
+    const percent: number = data.percent || 0;
     if (progressFillEl) progressFillEl.style.width = percent + '%';
     if (progressTextEl) progressTextEl.textContent = percent.toFixed(1) + '%';
 
@@ -2208,8 +2220,8 @@ async function startDownload(versionId) {
   });
 
   try {
-    const maxConcurrent = getMaxConcurrentFromSettings();
-    let result;
+    const maxConcurrent: number = getMaxConcurrentFromSettings();
+    let result: any;
     
     if (selectedModLoader) {
       
@@ -2228,14 +2240,14 @@ async function startDownload(versionId) {
       
       await recordVersionDownload(result.finalVersionId || versionId);
       
-      const finalDisplayName = selectedModLoader 
+      const finalDisplayName: string = selectedModLoader 
         ? `${modLoaderName} ${versionId}` 
         : `Minecraft ${versionId}`;
       
       setStatus('下载完成', 'success');
       if (downloadStatusEl) downloadStatusEl.textContent = `下载完成: ${finalDisplayName}`;
-      const progressFillEl = document.getElementById('progress-fill');
-      const progressTextEl = document.getElementById('progress-text');
+      const progressFillEl: HTMLElement | null = document.getElementById('progress-fill');
+      const progressTextEl: HTMLElement | null = document.getElementById('progress-text');
       if (progressFillEl) progressFillEl.style.width = '100%';
       if (progressTextEl) progressTextEl.textContent = '100%';
       showToast('下载完成', `${finalDisplayName} 已准备就绪`, 'success', 'download-complete');
@@ -2246,13 +2258,13 @@ async function startDownload(versionId) {
       if (cancelBtn) {
         cancelBtn.textContent = '下载完成';
         cancelBtn.classList.add('complete');
-        cancelBtn.disabled = true;
+        (cancelBtn as HTMLButtonElement).disabled = true;
       }
     } else {
       setStatus(`下载失败: ${result.error}`, 'error');
       if (downloadStatusEl) downloadStatusEl.textContent = `下载失败: ${result.error}`;
     }
-  } catch (err) {
+  } catch (err: any) {
     setStatus('下载出错', 'error');
     if (downloadStatusEl) downloadStatusEl.textContent = `下载出错: ${err.message || err}`;
     showToast('下载出错', err.message || String(err), 'error', 'download-error');
@@ -2273,28 +2285,32 @@ if (detailDownloadBtn) {
   });
 }
 
-window.gpcl.onGameClosed((code) => {
-  setStatus('游戏已退出');
-  showToast('游戏已退出', `退出码: ${code}`, 'info', 'game-closed');
-  launchBtn.disabled = false;
-});
+if (window.gpcl && window.gpcl.onGameClosed) {
+  window.gpcl.onGameClosed((code: number): void => {
+    setStatus('游戏已退出');
+    showToast('游戏已退出', `退出码: ${code}`, 'info', 'game-closed');
+    if (launchBtn) (launchBtn as HTMLButtonElement).disabled = false;
+  });
+}
 
-window.gpcl.onGameError((message) => {
-  setStatus(`启动出错: ${message}`, 'error');
-  showToast('游戏错误', message, 'error', 'game-error');
-  launchBtn.disabled = false;
-});
+if (window.gpcl && window.gpcl.onGameError) {
+  window.gpcl.onGameError((message: string): void => {
+    setStatus(`启动出错: ${message}`, 'error');
+    showToast('游戏错误', message, 'error', 'game-error');
+    if (launchBtn) (launchBtn as HTMLButtonElement).disabled = false;
+  });
+}
 
-launchBtn.addEventListener('click', launchGame);
+if (launchBtn) launchBtn.addEventListener('click', launchGame);
 
-(async function init() {
+(async function init(): Promise<void> {
   setStatus('正在加载...');
   initTheme();
   initScale();
   if (menuLaunch) menuLaunch.classList.add('active');
 
   if (usernameInput && window.gpcl && window.gpcl.getPlayerName) {
-    const savedName = await window.gpcl.getPlayerName();
+    const savedName: string = await window.gpcl.getPlayerName();
     if (savedName) usernameInput.value = savedName;
   }
 
@@ -2308,7 +2324,7 @@ launchBtn.addEventListener('click', launchGame);
 
   bindModLoaderEvents();
 
-  setInterval(async () => {
+  setInterval(async (): Promise<void> => {
     
     if (currentPage === 'launch') {
       await loadVersions(true);
@@ -2320,15 +2336,15 @@ launchBtn.addEventListener('click', launchGame);
     }
   }, 2000);
 
-  async function refreshJavaStatus() {
-    const javaVersions = ["8", "17", "21", "25"];
+  async function refreshJavaStatus(): Promise<void> {
+    const javaVersions: string[] = ["8", "17", "21", "25"];
     
     for (const ver of javaVersions) {
       try {
         const result = await window.gpcl.checkJava(ver);
-        const card = document.querySelector(`.java-version-card[data-version="${ver}"]`);
-        const badge = document.getElementById(`java-${ver}-status`);
-        const btn = card?.querySelector('.java-install-btn');
+        const card: HTMLElement | null = document.querySelector(`.java-version-card[data-version="${ver}"]`) as HTMLElement | null;
+        const badge: HTMLElement | null = document.getElementById(`java-${ver}-status`);
+        const btn: HTMLElement | null = card?.querySelector('.java-install-btn') as HTMLElement | null;
         
         if (result.installed) {
           if (!card?.classList.contains('installed')) {
@@ -2340,7 +2356,7 @@ launchBtn.addEventListener('click', launchGame);
             if (btn) {
               btn.textContent = '卸载';
               btn.classList.add('installed');
-              btn.disabled = false;
+              (btn as HTMLButtonElement).disabled = false;
             }
           }
         } else {
@@ -2353,11 +2369,11 @@ launchBtn.addEventListener('click', launchGame);
             if (btn) {
               btn.textContent = '安装';
               btn.classList.remove('installed');
-              btn.disabled = false;
+              (btn as HTMLButtonElement).disabled = false;
             }
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error(`检查Java ${ver} 状态失败`, e);
       }
     }
@@ -2365,8 +2381,8 @@ launchBtn.addEventListener('click', launchGame);
     updateJavaInstallStatus();
   }
 
-  const refreshBtn = document.getElementById('refresh-btn-page');
-  if (refreshBtn) refreshBtn.addEventListener('click', async () => {
+  const refreshBtn: HTMLElement | null = document.getElementById('refresh-btn-page');
+  if (refreshBtn) refreshBtn.addEventListener('click', async (): Promise<void> => {
     setStatus('重试加载远程版本...');
     await loadRemoteVersions();
     
@@ -2374,10 +2390,10 @@ launchBtn.addEventListener('click', launchGame);
     setStatus('准备就绪');
   });
 
-  if (cancelDownloadBtn) cancelDownloadBtn.addEventListener('click', async () => {
-    if (isUpdateDownloadActive) return; // 更新下载有自己的取消逻辑
+  if (cancelDownloadBtn) cancelDownloadBtn.addEventListener('click', async (): Promise<void> => {
+    if (isUpdateDownloadActive) return;
 
-    const result = await showDialog({
+    const result: boolean = await showDialog({
       type: 'confirm',
       title: '确认取消',
       message: '确定要取消当前下载吗？已下载的文件将被清理。'
@@ -2401,7 +2417,7 @@ launchBtn.addEventListener('click', launchGame);
     }, 100);
   }
 
-  const launchCancelBtn = document.getElementById('launch-cancel-btn');
+  const launchCancelBtn: HTMLElement | null = document.getElementById('launch-cancel-btn');
   if (launchCancelBtn) {
     launchCancelBtn.addEventListener('click', () => {
       setStatus('[动画] 用户取消启动');
@@ -2414,16 +2430,16 @@ launchBtn.addEventListener('click', launchGame);
 
   checkForUpdates(true);
 
-  const checkUpdateBtn = document.getElementById('check-update-btn');
+  const checkUpdateBtn: HTMLElement | null = document.getElementById('check-update-btn');
   if (checkUpdateBtn) {
-    checkUpdateBtn.addEventListener('click', async () => {
+    checkUpdateBtn.addEventListener('click', async (): Promise<void> => {
       checkUpdateBtn.disabled = true;
       checkUpdateBtn.textContent = '检查中...';
       
       await checkForUpdates(false);
       
-      const updateStatus = document.getElementById('update-status');
-      const goDownloadBtn = document.getElementById('go-download-btn');
+      const updateStatus: HTMLElement | null = document.getElementById('update-status');
+      const goDownloadBtnEl: HTMLElement | null = document.getElementById('go-download-btn');
       
       if (updateAvailable) {
         const newest = allNewerVersions[allNewerVersions.length - 1];
@@ -2435,10 +2451,10 @@ launchBtn.addEventListener('click', launchGame);
           updateStatus.classList.add('show', 'has-update');
         }
         
-        if (goDownloadBtn) {
-          goDownloadBtn.classList.remove('hidden');
+        if (goDownloadBtnEl) {
+          goDownloadBtnEl.classList.remove('hidden');
         }
-        const openWebsiteBtn = document.getElementById('open-website-btn');
+        const openWebsiteBtn: HTMLElement | null = document.getElementById('open-website-btn');
         if (openWebsiteBtn) {
           openWebsiteBtn.classList.remove('hidden');
         }
@@ -2452,10 +2468,10 @@ launchBtn.addEventListener('click', launchGame);
           updateStatus.classList.remove('has-update');
         }
         
-        if (goDownloadBtn) {
-          goDownloadBtn.classList.add('hidden');
+        if (goDownloadBtnEl) {
+          goDownloadBtnEl.classList.add('hidden');
         }
-        const openWebsiteBtn2 = document.getElementById('open-website-btn');
+        const openWebsiteBtn2: HTMLElement | null = document.getElementById('open-website-btn');
         if (openWebsiteBtn2) {
           openWebsiteBtn2.classList.add('hidden');
         }
@@ -2465,86 +2481,86 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  const goDownloadBtn = document.getElementById('go-download-btn');
+  const goDownloadBtn: HTMLElement | null = document.getElementById('go-download-btn');
 
-  const autoCheckUpdate = document.getElementById('auto-check-update');
+  const autoCheckUpdateEl: HTMLInputElement | null = document.getElementById('auto-check-update') as HTMLInputElement | null;
 
-  const preventMultipleLaunch = document.getElementById('prevent-multiple-launch');
+  const preventMultipleLaunchEl: HTMLInputElement | null = document.getElementById('prevent-multiple-launch') as HTMLInputElement | null;
 
-  const autoClearLogs = document.getElementById('auto-clear-logs');
-  const logRetentionContainer = document.getElementById('log-retention-container');
-  const logRetentionValue = document.getElementById('log-retention-value');
-  const logRetentionUnit = document.getElementById('log-retention-unit');
+  const autoClearLogsEl: HTMLInputElement | null = document.getElementById('auto-clear-logs') as HTMLInputElement | null;
+  const logRetentionContainerEl: HTMLElement | null = document.getElementById('log-retention-container');
+  const logRetentionValueEl: HTMLInputElement | null = document.getElementById('log-retention-value') as HTMLInputElement | null;
+  const logRetentionUnitEl: HTMLElement | null = document.getElementById('log-retention-unit');
 
-  const aboutVersion = document.getElementById('about-version');
+  const aboutVersion: HTMLElement | null = document.getElementById('about-version');
   
-  const customMirrorContainer = document.getElementById('custom-java-mirror-container');
-  const customMirrorUrl = document.getElementById('custom-java-mirror-url');
+  const customMirrorContainerEl: HTMLElement | null = document.getElementById('custom-java-mirror-container');
+  const customMirrorUrlEl: HTMLInputElement | null = document.getElementById('custom-java-mirror-url') as HTMLInputElement | null;
 
-  initCustomSelect('settings-memory', async (value) => {
+  initCustomSelect('settings-memory', async (value: string): Promise<void> => {
     const settings = await loadSettings();
     settings.game.memory = value;
     await gpcl.saveSettings(settings);
   });
 
-  initCustomSelect('settings-window-mode', async (value) => {
+  initCustomSelect('settings-window-mode', async (value: string): Promise<void> => {
     const settings = await loadSettings();
-    if (!settings.game) settings.game = {};
+    if (!settings.game) settings.game = {} as any;
     settings.game.windowMode = value;
     await gpcl.saveSettings(settings);
   });
 
-  initCustomSelect('settings-theme', async (value) => {
+  initCustomSelect('settings-theme', async (value: string): Promise<void> => {
     const settings = await loadSettings();
-    if (!settings.appearance) settings.appearance = {};
+    if (!settings.appearance) settings.appearance = {} as any;
     settings.appearance.theme = value;
     await gpcl.saveSettings(settings);
     applyTheme(value);
   });
 
-  initCustomSelect('settings-scale', async (value) => {
+  initCustomSelect('settings-scale', async (value: string): Promise<void> => {
     const settings = await loadSettings();
-    if (!settings.appearance) settings.appearance = {};
+    if (!settings.appearance) settings.appearance = {} as any;
     settings.appearance.scale = value;
     await gpcl.saveSettings(settings);
     applyScale(value);
   });
 
-  initCustomSelect('java-mirror-select', async (value) => {
-    if (customMirrorContainer) {
-      customMirrorContainer.classList.toggle('hidden', value !== 'custom');
+  initCustomSelect('java-mirror-select', async (value: string): Promise<void> => {
+    if (customMirrorContainerEl) {
+      customMirrorContainerEl.classList.toggle('hidden', value !== 'custom');
     }
-    await saveJavaMirrorSettings(value, customMirrorUrl?.value || '');
+    await saveJavaMirrorSettings(value, customMirrorUrlEl?.value || '');
   });
 
-  initCustomSelect('log-retention-unit', async (unit) => {
+  initCustomSelect('log-retention-unit', async (unit: string): Promise<void> => {
     
-    const maxValues = {
+    const maxValues: Record<string, number> = {
       hour: 23,
       day: 30,
       month: 11,
       year: 10
     };
     
-    if (logRetentionValue) {
-      let value = parseInt(logRetentionValue.value, 10);
+    if (logRetentionValueEl) {
+      let value: number = parseInt(logRetentionValueEl.value, 10);
       if (isNaN(value) || value < 1) value = 1;
       if (value > maxValues[unit]) {
         value = maxValues[unit];
-        logRetentionValue.value = value;
+        logRetentionValueEl.value = String(value);
       }
     }
     
     const settings = await loadSettings();
     settings.advanced.logRetentionUnit = unit;
-    if (logRetentionValue) {
-      settings.advanced.logRetentionValue = parseInt(logRetentionValue.value, 10);
+    if (logRetentionValueEl) {
+      settings.advanced.logRetentionValue = parseInt(logRetentionValueEl.value, 10);
     }
     await gpcl.saveSettings(settings);
   });
 
   if (goDownloadBtn) {
-    goDownloadBtn.addEventListener('click', async () => {
+    goDownloadBtn.addEventListener('click', async (): Promise<void> => {
       if (updateAvailable && allNewerVersions.length > 0) {
         showPage('download');
         const newest = allNewerVersions[allNewerVersions.length - 1];
@@ -2553,83 +2569,83 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  const openWebsiteBtn = document.getElementById('open-website-btn');
-  if (openWebsiteBtn) {
-    openWebsiteBtn.addEventListener('click', () => {
+  const openWebsiteBtnEl: HTMLElement | null = document.getElementById('open-website-btn');
+  if (openWebsiteBtnEl) {
+    openWebsiteBtnEl.addEventListener('click', () => {
       if (window.gpcl && window.gpcl.openExternal) {
         window.gpcl.openExternal('https://gamets.caellab.com/gpcl/');
       }
     });
   }
 
-  if (autoCheckUpdate) {
+  if (autoCheckUpdateEl) {
     
-    (async () => {
+    (async (): Promise<void> => {
       const settings = await loadSettings();
-      autoCheckUpdate.checked = settings.advanced?.autoCheckUpdate !== false;
+      autoCheckUpdateEl.checked = settings.advanced?.autoCheckUpdate !== false;
     })();
     
-    autoCheckUpdate.addEventListener('change', async () => {
+    autoCheckUpdateEl.addEventListener('change', async (): Promise<void> => {
       const settings = await loadSettings();
-      settings.advanced.autoCheckUpdate = autoCheckUpdate.checked;
+      settings.advanced.autoCheckUpdate = autoCheckUpdateEl.checked;
       await gpcl.saveSettings(settings);
       updateSettingsBadge();
     });
   }
 
-  if (preventMultipleLaunch) {
-    (async () => {
+  if (preventMultipleLaunchEl) {
+    (async (): Promise<void> => {
       const settings = await loadSettings();
-      preventMultipleLaunch.checked = settings.advanced?.preventMultipleLaunch !== false;
+      preventMultipleLaunchEl.checked = settings.advanced?.preventMultipleLaunch !== false;
     })();
 
-    preventMultipleLaunch.addEventListener('change', async () => {
+    preventMultipleLaunchEl.addEventListener('change', async (): Promise<void> => {
       const settings = await loadSettings();
-      settings.advanced.preventMultipleLaunch = preventMultipleLaunch.checked;
+      settings.advanced.preventMultipleLaunch = preventMultipleLaunchEl.checked;
       await gpcl.saveSettings(settings);
     });
   }
 
-  const playStartupAnimation = document.getElementById('play-startup-animation');
+  const playStartupAnimation: HTMLInputElement | null = document.getElementById('play-startup-animation') as HTMLInputElement | null;
   if (playStartupAnimation) {
-    (async () => {
+    (async (): Promise<void> => {
       const settings = await loadSettings();
       playStartupAnimation.checked = settings.appearance?.playStartupAnimation === true;
     })();
 
-    playStartupAnimation.addEventListener('change', async () => {
+    playStartupAnimation.addEventListener('change', async (): Promise<void> => {
       const settings = await loadSettings();
-      if (!settings.appearance) settings.appearance = {};
+      if (!settings.appearance) settings.appearance = {} as any;
       settings.appearance.playStartupAnimation = playStartupAnimation.checked;
       await gpcl.saveSettings(settings);
     });
   }
 
-  const skipSplash = document.getElementById('skip-splash');
+  const skipSplash: HTMLInputElement | null = document.getElementById('skip-splash') as HTMLInputElement | null;
   if (skipSplash) {
-    (async () => {
+    (async (): Promise<void> => {
       const settings = await loadSettings();
       skipSplash.checked = settings.appearance?.skipSplash === true;
     })();
 
-    skipSplash.addEventListener('change', async () => {
+    skipSplash.addEventListener('change', async (): Promise<void> => {
       const settings = await loadSettings();
-      if (!settings.appearance) settings.appearance = {};
+      if (!settings.appearance) settings.appearance = {} as any;
       settings.appearance.skipSplash = skipSplash.checked;
       await gpcl.saveSettings(settings);
     });
   }
 
-  const developerMode = document.getElementById('developer-mode');
+  const developerMode: HTMLInputElement | null = document.getElementById('developer-mode') as HTMLInputElement | null;
   if (developerMode) {
-    (async () => {
+    (async (): Promise<void> => {
       const settings = await loadSettings();
       developerMode.checked = settings.advanced?.developerMode === true;
     })();
 
-    developerMode.addEventListener('change', async () => {
+    developerMode.addEventListener('change', async (): Promise<void> => {
       if (developerMode.checked) {
-        const confirmed = await showDialog({
+        const confirmed: boolean = await showDialog({
           type: 'confirm',
           title: '确认开启开发者模式',
           message: '确认要开启吗？开启后需要重启 GPCL 才能生效。开启开发者模式后将允许打开 DevTools、右键菜单及刷新页面。'
@@ -2660,34 +2676,34 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  if (autoClearLogs) {
-    (async () => {
+  if (autoClearLogsEl) {
+    (async (): Promise<void> => {
       const settings = await loadSettings();
-      autoClearLogs.checked = settings.advanced?.autoClearLogs !== false;
+      autoClearLogsEl.checked = settings.advanced?.autoClearLogs !== false;
     })();
 
-    autoClearLogs.addEventListener('change', async () => {
+    autoClearLogsEl.addEventListener('change', async (): Promise<void> => {
       const settings = await loadSettings();
-      settings.advanced.autoClearLogs = autoClearLogs.checked;
+      settings.advanced.autoClearLogs = autoClearLogsEl.checked;
       await gpcl.saveSettings(settings);
       
-      if (logRetentionContainer) {
-        logRetentionContainer.classList.toggle('hidden', !autoClearLogs.checked);
+      if (logRetentionContainerEl) {
+        logRetentionContainerEl.classList.toggle('hidden', !autoClearLogsEl.checked);
       }
     });
   }
 
-  if (logRetentionValue) {
-    (async () => {
+  if (logRetentionValueEl) {
+    (async (): Promise<void> => {
       const settings = await loadSettings();
-      logRetentionValue.value = settings.advanced?.logRetentionValue || 7;
+      logRetentionValueEl.value = String(settings.advanced?.logRetentionValue || 7);
     })();
 
-    logRetentionValue.addEventListener('change', async () => {
-      let value = parseInt(logRetentionValue.value, 10);
-      const unit = getCustomSelectValue('log-retention-unit') || 'day';
+    logRetentionValueEl.addEventListener('change', async (): Promise<void> => {
+      let value: number = parseInt(logRetentionValueEl.value, 10);
+      const unit: string = getCustomSelectValue('log-retention-unit') || 'day';
 
-      const maxValues = {
+      const maxValues: Record<string, number> = {
         hour: 23,
         day: 30,
         month: 11,
@@ -2700,7 +2716,7 @@ launchBtn.addEventListener('click', launchGame);
         value = maxValues[unit];
       }
       
-      logRetentionValue.value = value;
+      logRetentionValueEl.value = String(value);
       
       const settings = await loadSettings();
       settings.advanced.logRetentionValue = value;
@@ -2709,25 +2725,25 @@ launchBtn.addEventListener('click', launchGame);
   }
 
   if (aboutVersion) {
-    const version = await getCurrentVersion();
+    const version: string = await getCurrentVersion();
     aboutVersion.textContent = `版本: ${version}`;
   }
 
-  if (customMirrorUrl) {
-    customMirrorUrl.addEventListener('input', async () => {
-      await saveJavaMirrorSettings(getCustomSelectValue('java-mirror-select') || 'tsinghua', customMirrorUrl.value);
+  if (customMirrorUrlEl) {
+    customMirrorUrlEl.addEventListener('input', async (): Promise<void> => {
+      await saveJavaMirrorSettings(getCustomSelectValue('java-mirror-select') || 'tsinghua', customMirrorUrlEl.value);
     });
   }
 
-  (async () => {
+  (async (): Promise<void> => {
     const settings = await loadSettings();
 
-    let memoryValue = '2'; 
+    let memoryValue: string = '2'; 
     if (settings.game?.memory) {
-      const storedMemory = String(settings.game.memory);
+      const storedMemory: string = String(settings.game.memory);
       if (storedMemory.includes('096')) {
         
-        const mb = parseInt(storedMemory);
+        const mb: number = parseInt(storedMemory);
         if (!isNaN(mb)) {
           memoryValue = String(mb / 1024);
         }
@@ -2739,46 +2755,46 @@ launchBtn.addEventListener('click', launchGame);
 
     setCustomSelectValue('settings-window-mode', settings.game?.windowMode || 'windowed');
 
-    const theme = settings.appearance?.theme || 'dark';
+    const theme: string = settings.appearance?.theme || 'dark';
     setCustomSelectValue('settings-theme', theme);
     applyTheme(theme);
 
-    const scale = settings.appearance?.scale || '100';
+    const scale: string = settings.appearance?.scale || '100';
     setCustomSelectValue('settings-scale', scale);
     applyScale(scale);
 
-    const playStartupAnimSync = document.getElementById('play-startup-animation');
+    const playStartupAnimSync: HTMLInputElement | null = document.getElementById('play-startup-animation') as HTMLInputElement | null;
     if (playStartupAnimSync) {
       playStartupAnimSync.checked = settings.appearance?.playStartupAnimation === true;
     }
 
-    const skipSplashSync = document.getElementById('skip-splash');
+    const skipSplashSync: HTMLInputElement | null = document.getElementById('skip-splash') as HTMLInputElement | null;
     if (skipSplashSync) {
       skipSplashSync.checked = settings.appearance?.skipSplash === true;
     }
 
-    const javaMirror = settings.download?.javaMirror || 'tsinghua';
+    const javaMirror: string = settings.download?.javaMirror || 'tsinghua';
     setCustomSelectValue('java-mirror-select', javaMirror);
-    if (customMirrorContainer) {
-      customMirrorContainer.classList.toggle('hidden', javaMirror !== 'custom');
+    if (customMirrorContainerEl) {
+      customMirrorContainerEl.classList.toggle('hidden', javaMirror !== 'custom');
     }
-    if (customMirrorUrl && settings.download?.customJavaMirror) {
-      customMirrorUrl.value = settings.download.customJavaMirror;
+    if (customMirrorUrlEl && settings.download?.customJavaMirror) {
+      customMirrorUrlEl.value = settings.download.customJavaMirror;
     }
 
     setCustomSelectValue('log-retention-unit', settings.advanced?.logRetentionUnit || 'day');
   })();
 
-  (async () => {
-    const resetDefaultToggle = document.getElementById('settings-reset-default');
+  (async (): Promise<void> => {
+    const resetDefaultToggle: HTMLInputElement | null = document.getElementById('settings-reset-default') as HTMLInputElement | null;
     
     if (resetDefaultToggle) {
       resetDefaultToggle.checked = false; 
       
-      resetDefaultToggle.addEventListener('change', async function() {
+      resetDefaultToggle.addEventListener('change', async function(this: HTMLInputElement): Promise<void> {
         if (this.checked) {
           
-          const confirmed = await showDialog({
+          const confirmed: boolean = await showDialog({
             type: 'confirm',
             title: '恢复默认设置',
             message: '确定要将所有设置恢复为默认值吗？\n\n此操作会重启启动器。'
@@ -2804,29 +2820,29 @@ launchBtn.addEventListener('click', launchGame);
     }
   })();
 
-  const settingsSidebarItems = document.querySelectorAll('.settings-sidebar-item');
-  settingsSidebarItems.forEach(item => {
+  const settingsSidebarItems: NodeListOf<Element> = document.querySelectorAll('.settings-sidebar-item');
+  settingsSidebarItems.forEach((item: Element) => {
     item.addEventListener('click', () => {
-      const tabName = item.dataset.tab;
+      const tabName: string | undefined = (item as HTMLElement).dataset.tab;
       if (tabName) {
         switchSettingsTab(tabName);
       }
     });
   });
 
-  let currentVersionForSettings = null;
+  let currentVersionForSettings: string | null = null;
   
-  const versionSettingsBtn = document.getElementById('version-settings');
-  const versionSettingsPanel = document.getElementById('version-settings-panel');
-  const versionSettingsBackBtn = document.getElementById('version-settings-back-btn');
-  const versionSettingsTitle = document.getElementById('version-settings-title');
-  const versionDeleteEnable = document.getElementById('version-delete-enable');
-  const versionServerIpContainer = document.getElementById('version-server-ip-container');
-  const versionServerIpInput = document.getElementById('version-server-ip');
-  const versionSelectPanel = document.getElementById('version-select-panel');
-  const statusElement = document.getElementById('status');
+  const versionSettingsBtn: HTMLElement | null = document.getElementById('version-settings');
+  const versionSettingsPanel: HTMLElement | null = document.getElementById('version-settings-panel');
+  const versionSettingsBackBtn: HTMLElement | null = document.getElementById('version-settings-back-btn');
+  const versionSettingsTitle: HTMLElement | null = document.getElementById('version-settings-title');
+  const versionDeleteEnable: HTMLInputElement | null = document.getElementById('version-delete-enable') as HTMLInputElement | null;
+  const versionServerIpContainer: HTMLElement | null = document.getElementById('version-server-ip-container');
+  const versionServerIpInput: HTMLInputElement | null = document.getElementById('version-server-ip') as HTMLInputElement | null;
+  const versionSelectPanel: HTMLElement | null = document.getElementById('version-select-panel');
+  const statusElement: HTMLElement | null = document.getElementById('status');
   
-  async function getVersionSettings(versionId) {
+  async function getVersionSettings(versionId: string): Promise<any> {
     try {
       if (window.gpcl && window.gpcl.getVersionSettings) {
         const result = await window.gpcl.getVersionSettings(versionId);
@@ -2834,59 +2850,59 @@ launchBtn.addEventListener('click', launchGame);
           return result.settings;
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('获取版本设置失败:', e);
     }
     return {};
   }
   
-  async function saveVersionSettings(versionId, settings) {
+  async function saveVersionSettings(versionId: string, settings: any): Promise<boolean> {
     try {
       if (window.gpcl && window.gpcl.saveVersionSettings) {
         const result = await window.gpcl.saveVersionSettings(versionId, settings);
         return result.success;
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('保存版本设置失败:', e);
     }
     return false;
   }
 
-  function updateServerIpVisibility() {
-    const startupMode = getCustomSelectValue('version-startup-mode');
+  function updateServerIpVisibility(): void {
+    const startupMode: string | null = getCustomSelectValue('version-startup-mode');
     if (startupMode === 'join') {
-      versionServerIpContainer.classList.add('visible');
+      if (versionServerIpContainer) versionServerIpContainer.classList.add('visible');
     } else {
-      versionServerIpContainer.classList.remove('visible');
+      if (versionServerIpContainer) versionServerIpContainer.classList.remove('visible');
     }
   }
   
-  async function loadVersionSettingsToUI(versionId) {
+  async function loadVersionSettingsToUI(versionId: string): Promise<void> {
     const settings = await getVersionSettings(versionId);
     
-    versionDeleteEnable.checked = false;
+    if (versionDeleteEnable) versionDeleteEnable.checked = false;
     setCustomSelectValue('version-memory', settings.memory || 'global');
     setCustomSelectValue('version-window-mode', settings.windowMode || 'global');
     setCustomSelectValue('version-startup-mode', settings.startupMode || 'default');
-    versionServerIpInput.value = settings.serverIp || '';
+    if (versionServerIpInput) versionServerIpInput.value = settings.serverIp || '';
     
     updateServerIpVisibility();
   }
   
-  let saveTimeout = null;
-  function saveCurrentVersionSettings() {
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  function saveCurrentVersionSettings(): void {
     if (!currentVersionForSettings) return;
     
     const settings = {
       memory: getCustomSelectValue('version-memory') || 'global',
       windowMode: getCustomSelectValue('version-window-mode') || 'global',
       startupMode: getCustomSelectValue('version-startup-mode') || 'default',
-      serverIp: versionServerIpInput.value || ''
+      serverIp: versionServerIpInput?.value || ''
     };
     
     if (saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(async () => {
-      const success = await saveVersionSettings(currentVersionForSettings, settings);
+    saveTimeout = setTimeout(async (): Promise<void> => {
+      const success: boolean = await saveVersionSettings(currentVersionForSettings!, settings);
       if (success) {
         showToast('保存成功', `版本 ${currentVersionForSettings} 的设置已保存`, 'success');
       } else {
@@ -2895,13 +2911,13 @@ launchBtn.addEventListener('click', launchGame);
     }, 300);
   }
   
-  async function showVersionSettingsPanel(versionId) {
+  async function showVersionSettingsPanel(versionId: string): Promise<void> {
     if (!versionSettingsPanel) return;
     
     currentVersionForSettings = versionId;
-    versionSettingsTitle.textContent = `版本设置 - ${versionId}`;
+    if (versionSettingsTitle) versionSettingsTitle.textContent = `版本设置 - ${versionId}`;
     
-    versionSelectPanel.classList.add('hidden');
+    if (versionSelectPanel) versionSelectPanel.classList.add('hidden');
     if (statusElement) statusElement.style.display = 'none';
     
     versionSettingsPanel.classList.remove('hidden');
@@ -2910,7 +2926,7 @@ launchBtn.addEventListener('click', launchGame);
     await loadVersionSettingsToUI(versionId);
   }
   
-  async function hideVersionSettingsPanel() {
+  async function hideVersionSettingsPanel(): Promise<void> {
     if (!versionSettingsPanel) return;
 
     if (saveTimeout) clearTimeout(saveTimeout);
@@ -2919,7 +2935,7 @@ launchBtn.addEventListener('click', launchGame);
         memory: getCustomSelectValue('version-memory') || 'global',
         windowMode: getCustomSelectValue('version-window-mode') || 'global',
         startupMode: getCustomSelectValue('version-startup-mode') || 'default',
-        serverIp: versionServerIpInput.value || ''
+        serverIp: versionServerIpInput?.value || ''
       };
       await saveVersionSettings(currentVersionForSettings, settings);
     }
@@ -2927,18 +2943,20 @@ launchBtn.addEventListener('click', launchGame);
     versionSettingsPanel.classList.add('slide-out');
     
     setTimeout(() => {
-      versionSettingsPanel.classList.add('hidden');
-      versionSettingsPanel.classList.remove('slide-out');
+      if (versionSettingsPanel) {
+        versionSettingsPanel.classList.add('hidden');
+        versionSettingsPanel.classList.remove('slide-out');
+      }
       if (statusElement) statusElement.style.display = '';
       currentVersionForSettings = null;
     }, 300);
   }
   
   if (versionSettingsBtn) {
-    versionSettingsBtn.addEventListener('click', async () => {
+    versionSettingsBtn.addEventListener('click', async (): Promise<void> => {
       if (selectedVersionId) {
         
-        if (!versionSelectPanel.classList.contains('hidden')) {
+        if (versionSelectPanel && !versionSelectPanel.classList.contains('hidden')) {
           versionSelectPanel.classList.add('hidden');
         }
         await showVersionSettingsPanel(selectedVersionId);
@@ -2949,15 +2967,15 @@ launchBtn.addEventListener('click', launchGame);
   }
   
   if (versionSettingsBackBtn) {
-    versionSettingsBackBtn.addEventListener('click', async () => {
+    versionSettingsBackBtn.addEventListener('click', async (): Promise<void> => {
       await hideVersionSettingsPanel();
     });
   }
   
   if (versionDeleteEnable) {
-    versionDeleteEnable.addEventListener('change', async function() {
+    versionDeleteEnable.addEventListener('change', async function(this: HTMLInputElement): Promise<void> {
       if (this.checked) {
-        const confirmed = await showDialog({
+        const confirmed: boolean = await showDialog({
           type: 'confirm',
           title: '确认删除',
           message: `确定要删除版本 "${currentVersionForSettings}" 吗？此操作不可恢复！`
@@ -2977,7 +2995,7 @@ launchBtn.addEventListener('click', launchGame);
                 showToast('删除失败', result.error || '无法删除版本', 'error');
                 this.checked = false;
               }
-            } catch (e) {
+            } catch (e: any) {
               showToast('删除失败', e.message, 'error');
               this.checked = false;
             }
@@ -2989,13 +3007,13 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  const versionOpenModsBtn = document.getElementById('version-open-mods-btn');
+  const versionOpenModsBtn: HTMLElement | null = document.getElementById('version-open-mods-btn');
   if (versionOpenModsBtn) {
-    versionOpenModsBtn.addEventListener('click', async () => {
+    versionOpenModsBtn.addEventListener('click', async (): Promise<void> => {
       if (currentVersionForSettings && window.gpcl && window.gpcl.getGameDir) {
-        const gameDir = await window.gpcl.getGameDir();
+        const gameDir: string = await window.gpcl.getGameDir();
         if (gameDir) {
-          const modsPath = gameDir + '\\versions\\' + currentVersionForSettings + '\\mods';
+          const modsPath: string = gameDir + '\\versions\\' + currentVersionForSettings + '\\mods';
           window.gpcl.openFolder(modsPath);
         }
       }
@@ -3021,12 +3039,12 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  const versionSelectBtn = document.getElementById('version-select');
-  const versionPanel = document.getElementById('version-select-panel');
+  const versionSelectBtn: HTMLElement | null = document.getElementById('version-select');
+  const versionPanel: HTMLElement | null = document.getElementById('version-select-panel');
   if (versionSelectBtn && versionPanel) {
     versionSelectBtn.addEventListener('click', () => {
       
-      if (!versionSettingsPanel.classList.contains('hidden')) {
+      if (versionSettingsPanel && !versionSettingsPanel.classList.contains('hidden')) {
         return;
       }
 
@@ -3039,44 +3057,110 @@ launchBtn.addEventListener('click', launchGame);
     });
   }
 
-  const authMicrosoftBtn = document.getElementById('auth-microsoft');
+  const authMicrosoftBtn: HTMLElement | null = document.getElementById('auth-microsoft');
+  const authOfflineBtn: HTMLElement | null = document.getElementById('auth-offline');
+
+  // 全局监听微软认证结果（只注册一次）
+  if (window.gpcl && window.gpcl.onMicrosoftAuthResult) {
+    window.gpcl.onMicrosoftAuthResult((result: any) => {
+      if (result.status === 'success') {
+        msAuthData = {
+          uuid: result.uuid,
+          username: result.username,
+          accessToken: result.accessToken
+        };
+        authMicrosoftBtn?.classList.add('auth-tab-active');
+        authOfflineBtn?.classList.remove('auth-tab-active');
+        if (usernameInput) {
+          usernameInput.value = result.username;
+          usernameInput.disabled = true;
+        }
+        showToast('登录成功', `欢迎回来，${result.username}！`, 'success');
+      } else if (result.status === 'timeout') {
+        showToast('登录超时', '登录超时，请重试', 'error');
+      } else if (result.status === 'error') {
+        showToast('登录失败', result.message || '微软登录失败', 'error');
+      }
+    });
+  }
+
   if (authMicrosoftBtn) {
-    authMicrosoftBtn.addEventListener('click', () => {
-      showToast('正版登录', '正版登录功能尚未对接微软账号系统', 'info');
+    // 启用正版按钮
+    authMicrosoftBtn.removeAttribute('disabled');
+    authMicrosoftBtn.classList.remove('auth-tab-disabled');
+
+    authMicrosoftBtn.addEventListener('click', async () => {
+      if (msAuthData) {
+        // 已登录 -> 登出
+        msAuthData = null;
+        authMicrosoftBtn.classList.remove('auth-tab-active');
+        authOfflineBtn?.classList.add('auth-tab-active');
+        if (usernameInput) {
+          const savedName: string = await window.gpcl.getPlayerName();
+          usernameInput.value = savedName || 'GPCL_Player';
+          usernameInput.disabled = false;
+        }
+        showToast('已登出', '已切换到离线模式', 'info');
+        return;
+      }
+
+      showToast('正版登录', '正在打开浏览器进行微软登录...', 'info');
+
+      // 启动认证
+      if (window.gpcl && window.gpcl.startMicrosoftAuth) {
+        await window.gpcl.startMicrosoftAuth();
+      }
+    });
+  }
+
+  if (authOfflineBtn) {
+    authOfflineBtn.addEventListener('click', () => {
+      if (msAuthData) {
+        showToast('提示', '请先点击正版按钮登出', 'warning');
+        return;
+      }
+      authOfflineBtn.classList.add('auth-tab-active');
+      authMicrosoftBtn?.classList.remove('auth-tab-active');
+      if (usernameInput) {
+        usernameInput.disabled = false;
+        window.gpcl.getPlayerName().then((name: string) => {
+          usernameInput.value = name || 'GPCL_Player';
+        });
+      }
     });
   }
 })();
 
-let latestVersion = null;
-let latestVersionLog = null;
-let updateAvailable = false;
-let allNewerVersions = [];
+let latestVersion: string | null = null;
+let latestVersionLog: string | null = null;
+let updateAvailable: boolean = false;
+let allNewerVersions: any[] = [];
 
-async function getCurrentVersion() {
+async function getCurrentVersion(): Promise<string> {
   try {
     if (window.gpcl && window.gpcl.getAppVersion) {
       return await window.gpcl.getAppVersion();
     }
-  } catch (e) {}
+  } catch (e: any) {}
   return '1.0.0';
 }
 
-function compareVersions(current, latest) {
-  const currentParts = current.split('.').map(Number);
-  const latestParts = latest.split('.').map(Number);
+function compareVersions(current: string, latest: string): number {
+  const currentParts: number[] = current.split('.').map(Number);
+  const latestParts: number[] = latest.split('.').map(Number);
   
   for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
-    const c = currentParts[i] || 0;
-    const l = latestParts[i] || 0;
+    const c: number = currentParts[i] || 0;
+    const l: number = latestParts[i] || 0;
     if (l > c) return 1;
     if (c > l) return -1;
   }
   return 0;
 }
 
-function parseLauncherVersions(launcherData) {
-  const versions = [];
-  let current = null;
+function parseLauncherVersions(launcherData: any[]): { version: string; title: string; log: string }[] {
+  const versions: { version: string; title: string; log: string }[] = [];
+  let current: { version: string; title: string; log: string } | null = null;
 
   for (const item of launcherData) {
     if (item.name === 'version' && item.key) {
@@ -3096,13 +3180,13 @@ function parseLauncherVersions(launcherData) {
   return versions;
 }
 
-function renderUpdateVersionCards(newerVersions) {
+function renderUpdateVersionCards(newerVersions: any[]): string {
   if (!newerVersions || newerVersions.length === 0) return '';
 
-  const cards = newerVersions.map((v, index) => {
-    const isNewest = index === newerVersions.length - 1;
-    const titleHtml = v.title ? `<div class="update-card-title">${v.title}</div>` : '';
-    const logHtml = v.log ? `<div class="update-card-log">${v.log}</div>` : '';
+  const cards: string = newerVersions.map((v: any, index: number) => {
+    const isNewest: boolean = index === newerVersions.length - 1;
+    const titleHtml: string = v.title ? `<div class="update-card-title">${v.title}</div>` : '';
+    const logHtml: string = v.log ? `<div class="update-card-log">${v.log}</div>` : '';
     return `<div class="update-version-card ${isNewest ? 'newest' : ''}">` +
       `<div class="update-card-header"><span class="update-card-version">${v.version}</span>` +
       `${isNewest ? '<span class="update-card-badge">最新</span>' : ''}</div>` +
@@ -3112,7 +3196,7 @@ function renderUpdateVersionCards(newerVersions) {
   return `<div class="update-versions-list">${cards}</div>`;
 }
 
-async function checkForUpdates(silent = false) {
+async function checkForUpdates(silent: boolean = false): Promise<void> {
   setStatus('[版本检查] 开始检查更新...');
   
   try {
@@ -3132,12 +3216,12 @@ async function checkForUpdates(silent = false) {
     latestVersion = parsedVersions[0].version;
     latestVersionLog = parsedVersions[0].log;
     
-    const currentVersion = await getCurrentVersion();
+    const currentVersion: string = await getCurrentVersion();
     setStatus(`[版本检查] 当前版本: ${currentVersion}, 最新版本: ${latestVersion}`);
     
     allNewerVersions = parsedVersions
-      .filter(v => compareVersions(currentVersion, v.version) > 0)
-      .sort((a, b) => compareVersions(b.version, a.version));
+      .filter((v: any) => compareVersions(currentVersion, v.version) > 0)
+      .sort((a: any, b: any) => compareVersions(b.version, a.version));
     
     updateAvailable = allNewerVersions.length > 0;
     
@@ -3153,13 +3237,13 @@ async function checkForUpdates(silent = false) {
     
     if (updateAvailable && silent) {
       const newest = allNewerVersions[allNewerVersions.length - 1];
-      const titlePart = newest.title ? ` "${newest.title}"` : '';
+      const titlePart: string = newest.title ? ` "${newest.title}"` : '';
       showToast('发现新版本', `GPCL ${newest.version}${titlePart} 已发布`, 'warning', 'update-available');
     }
     
     await updateSettingsBadge();
     
-  } catch (e) {
+  } catch (e: any) {
     setStatus(`[版本检查] 错误: ${e.message}`, 'error');
     console.error('[版本检查] 详细错误:', e);
     if (!silent) {
@@ -3173,7 +3257,7 @@ async function checkForUpdates(silent = false) {
 
 // ===== 应用内更新下载 =====
 
-async function startUpdateDownload(version) {
+async function startUpdateDownload(version: string): Promise<void> {
   if (!window.gpcl || !window.gpcl.downloadUpdate) {
     showToast('更新失败', '更新功能不可用', 'error');
     return;
@@ -3181,19 +3265,18 @@ async function startUpdateDownload(version) {
 
   isUpdateDownloadActive = true;
 
-  // 显示下载进度面板（复用已有的下载面板）
   await loadChartJs();
   initChart();
   resetChart();
 
-  const downloadPanel = document.getElementById('download-panel');
-  const filenameEl = document.getElementById('download-filename');
-  const downloadStatusEl = document.getElementById('download-status');
-  const progressFill = document.getElementById('progress-fill');
-  const progressText = document.getElementById('progress-text');
-  const cancelBtn = document.getElementById('cancel-download-btn');
+  const downloadPanelEl: HTMLElement | null = document.getElementById('download-panel');
+  const filenameEl: HTMLElement | null = document.getElementById('download-filename');
+  const downloadStatusEl: HTMLElement | null = document.getElementById('download-status');
+  const progressFill: HTMLElement | null = document.getElementById('progress-fill');
+  const progressText: HTMLElement | null = document.getElementById('progress-text');
+  const cancelBtn: HTMLElement | null = document.getElementById('cancel-download-btn');
 
-  if (downloadPanel) downloadPanel.classList.remove('hidden');
+  if (downloadPanelEl) downloadPanelEl.classList.remove('hidden');
   if (filenameEl) filenameEl.textContent = `正在下载: GPCL ${version} 安装程序`;
   if (downloadStatusEl) downloadStatusEl.textContent = `正在下载 GPCL ${version} ...`;
   if (progressFill) progressFill.style.width = '0%';
@@ -3201,36 +3284,34 @@ async function startUpdateDownload(version) {
   if (cancelBtn) {
     cancelBtn.textContent = '取消下载';
     cancelBtn.classList.remove('complete');
-    cancelBtn.disabled = false;
+    (cancelBtn as HTMLButtonElement).disabled = false;
   }
 
-  // 监听下载进度
   if (window.gpcl.onUpdateDownloadProgress) {
-    let lastTime = 0;
-    let lastBytes = 0;
-    let peakSpeed = 0;
+    let lastTime: number = 0;
+    let lastBytes: number = 0;
+    let peakSpeedInner: number = 0;
 
-    window.gpcl.onUpdateDownloadProgress((data) => {
-      const percent = data.percent || 0;
+    window.gpcl.onUpdateDownloadProgress((data: any): void => {
+      const percent: number = data.percent || 0;
       if (progressFill) progressFill.style.width = percent + '%';
       if (progressText) progressText.textContent = percent.toFixed(1) + '%';
       if (downloadStatusEl) downloadStatusEl.textContent = `正在下载 GPCL ${version}: ${percent.toFixed(1)}%`;
 
-      // 计算速度并更新曲线（每0.5秒更新一次）
-      const currentSpeedEl = document.getElementById('current-speed');
-      const peakSpeedEl = document.getElementById('peak-speed');
+      const currentSpeedEl: HTMLElement | null = document.getElementById('current-speed');
+      const peakSpeedEl: HTMLElement | null = document.getElementById('peak-speed');
       if (data.bytesDownloaded && data.totalBytes) {
-        const now = Date.now();
+        const now: number = Date.now();
         if (lastTime > 0 && now > lastTime) {
-          const timeDiff = (now - lastTime) / 1000;
+          const timeDiff: number = (now - lastTime) / 1000;
           if (timeDiff >= 0.5) {
-            const bytesDiff = data.bytesDownloaded - lastBytes;
+            const bytesDiff: number = data.bytesDownloaded - lastBytes;
             if (bytesDiff >= 0) {
-              const speedBps = Math.max(0, (bytesDiff * 8) / timeDiff / 1000000);
+              const speedBps: number = Math.max(0, (bytesDiff * 8) / timeDiff / 1000000);
               if (currentSpeedEl) currentSpeedEl.textContent = speedBps.toFixed(2) + ' Mbps';
-              if (speedBps > peakSpeed) {
-                peakSpeed = speedBps;
-                if (peakSpeedEl) peakSpeedEl.textContent = peakSpeed.toFixed(2) + ' Mbps';
+              if (speedBps > peakSpeedInner) {
+                peakSpeedInner = speedBps;
+                if (peakSpeedEl) peakSpeedEl.textContent = peakSpeedInner.toFixed(2) + ' Mbps';
               }
               updateChart(speedBps);
             }
@@ -3245,22 +3326,20 @@ async function startUpdateDownload(version) {
     });
   }
 
-  // 设置取消按钮
-  const handleCancel = async () => {
+  const handleCancel = async (): Promise<void> => {
     if (window.gpcl.cancelUpdateDownload) {
       await window.gpcl.cancelUpdateDownload();
     }
-    if (downloadPanel) downloadPanel.classList.add('hidden');
+    if (downloadPanelEl) downloadPanelEl.classList.add('hidden');
     if (downloadStatusEl) downloadStatusEl.textContent = '下载已取消';
     showToast('已取消', '更新下载已取消', 'info');
-    cancelBtn.removeEventListener('click', handleCancel);
+    if (cancelBtn) cancelBtn.removeEventListener('click', handleCancel);
   };
   if (cancelBtn) {
-    cancelBtn.onclick = handleCancel;
+    cancelBtn.onclick = handleCancel as any;
   }
 
   try {
-    // 开始下载
     const result = await window.gpcl.downloadUpdate(version);
 
     if (result.success) {
@@ -3268,14 +3347,12 @@ async function startUpdateDownload(version) {
       if (progressFill) progressFill.style.width = '100%';
       if (progressText) progressText.textContent = '100%';
 
-      // SHA1 校验（非强制，失败时询问用户）
       const verifyResult = await window.gpcl.verifyUpdateSHA1(result.filePath);
-      let sha1Ok = verifyResult.success;
-      let sha1Message = '下载完成';
+      let sha1Ok: boolean = verifyResult.success;
+      let sha1Message: string = '下载完成';
 
       if (!sha1Ok) {
-        // 校验失败或SHA1文件不存在，询问用户是否继续
-        const proceed = await showDialog({
+        const proceed: boolean = await showDialog({
           type: 'warning',
           title: '文件校验异常',
           message: `SHA1校验未通过：${verifyResult.error || '无法获取校验信息'}\n\n文件可能不完整或已损坏，是否仍要继续安装？`,
@@ -3283,7 +3360,7 @@ async function startUpdateDownload(version) {
           cancelText: '取消'
         });
         if (!proceed) {
-          if (downloadPanel) downloadPanel.classList.add('hidden');
+          if (downloadPanelEl) downloadPanelEl.classList.add('hidden');
           showToast('已取消', '更新安装已取消', 'info');
           return;
         }
@@ -3296,12 +3373,11 @@ async function startUpdateDownload(version) {
       if (cancelBtn) {
         cancelBtn.textContent = '下载完成';
         cancelBtn.classList.add('complete');
-        cancelBtn.disabled = true;
+        (cancelBtn as HTMLButtonElement).disabled = true;
         cancelBtn.onclick = null;
       }
 
-      // 显示更新确认对话框
-      const userConfirmed = await showDialog({
+      const userConfirmed: boolean = await showDialog({
         type: 'confirm',
         title: '更新就绪',
         message: 'GoodPlanCraftLauncher 已经准备好全新的开始，接下来需要重新启动，是否继续？',
@@ -3310,8 +3386,7 @@ async function startUpdateDownload(version) {
       });
 
       if (userConfirmed) {
-        // "继续更新" - 立即执行安装程序并退出
-        if (downloadPanel) downloadPanel.classList.add('hidden');
+        if (downloadPanelEl) downloadPanelEl.classList.add('hidden');
         const execResult = await window.gpcl.executeUpdateInstaller(result.filePath);
         if (execResult.success) {
           showToast('正在更新', '启动器即将关闭并开始安装...', 'info');
@@ -3322,22 +3397,21 @@ async function startUpdateDownload(version) {
           showToast('执行失败', execResult.error || '无法启动安装程序', 'error');
         }
       } else {
-        // "稍后" - 设置关闭钩子
         await window.gpcl.setUpdateShutdownHook(result.filePath);
-        if (downloadPanel) downloadPanel.classList.add('hidden');
+        if (downloadPanelEl) downloadPanelEl.classList.add('hidden');
         showToast('已记住', '关闭启动器时将自动执行更新', 'info');
       }
     } else if (result.cancelled) {
-      if (downloadPanel) downloadPanel.classList.add('hidden');
+      if (downloadPanelEl) downloadPanelEl.classList.add('hidden');
       if (downloadStatusEl) downloadStatusEl.textContent = '下载已取消';
     } else {
       throw new Error(result.error || '下载失败');
     }
-  } catch (err) {
+  } catch (err: any) {
     if (downloadStatusEl) downloadStatusEl.textContent = `下载失败: ${err.message}`;
     showToast('更新下载失败', err.message, 'error');
     if (cancelBtn) {
-      cancelBtn.disabled = true;
+      (cancelBtn as HTMLButtonElement).disabled = true;
       cancelBtn.onclick = null;
     }
   } finally {
@@ -3348,15 +3422,15 @@ async function startUpdateDownload(version) {
 
 // ===== 应用内更新下载结束 =====
 
-async function updateSettingsBadge() {
-  const settingsMenu = document.getElementById('menu-settings');
-  const aboutTab = document.getElementById('settings-tab-about');
-  const checkUpdateBtn = document.getElementById('check-update-btn');
+async function updateSettingsBadge(): Promise<void> {
+  const settingsMenu: HTMLElement | null = document.getElementById('menu-settings');
+  const aboutTab: HTMLElement | null = document.getElementById('settings-tab-about');
+  const checkUpdateBtn: HTMLElement | null = document.getElementById('check-update-btn');
 
-  const oldSettingsBadge = settingsMenu?.querySelector('.update-badge');
+  const oldSettingsBadge: HTMLElement | null = settingsMenu?.querySelector('.update-badge') as HTMLElement | null;
   if (oldSettingsBadge) oldSettingsBadge.remove();
 
-  const oldAboutBadge = aboutTab?.querySelector('.update-badge');
+  const oldAboutBadge: HTMLElement | null = aboutTab?.querySelector('.update-badge') as HTMLElement | null;
   if (oldAboutBadge) oldAboutBadge.remove();
 
   const settings = await loadSettings();
@@ -3364,7 +3438,7 @@ async function updateSettingsBadge() {
   if (updateAvailable && settings.advanced?.autoCheckUpdate !== false) {
     
     if (settingsMenu) {
-      const badge = document.createElement('span');
+      const badge: HTMLSpanElement = document.createElement('span');
       badge.className = 'update-badge';
       badge.textContent = '';
       badge.style.cssText = 'position:absolute;top:2px;right:2px;width:8px;height:8px;background:#f44336;border-radius:50%;';
@@ -3373,7 +3447,7 @@ async function updateSettingsBadge() {
     }
 
     if (aboutTab) {
-      const badge = document.createElement('span');
+      const badge: HTMLSpanElement = document.createElement('span');
       badge.className = 'update-badge';
       badge.textContent = '';
       badge.style.cssText = 'position:absolute;top:6px;right:8px;width:8px;height:8px;background:#f44336;border-radius:50%;';
@@ -3394,10 +3468,10 @@ async function updateSettingsBadge() {
   }
 }
 
-async function loadSettings() {
+async function loadSettings(): Promise<any> {
   try {
     return await gpcl.getSettings();
-  } catch (e) {
+  } catch (e: any) {
     console.error('加载设置失败:', e);
     return {
       game: {
@@ -3430,7 +3504,7 @@ async function loadSettings() {
   }
 }
 
-function applyTheme(theme) {
+function applyTheme(theme: string): void {
   if (theme === 'light') {
     document.body.classList.add('light-mode');
   } else {
@@ -3438,56 +3512,56 @@ function applyTheme(theme) {
   }
 }
 
-async function saveThemeSetting(theme) {
+async function saveThemeSetting(theme: string): Promise<void> {
   const settings = await loadSettings();
   settings.appearance.theme = theme;
   await gpcl.saveSettings(settings);
 }
 
-async function initTheme() {
+async function initTheme(): Promise<void> {
   const settings = await loadSettings();
-  const theme = settings.appearance?.theme || 'dark';
+  const theme: string = settings.appearance?.theme || 'dark';
   applyTheme(theme);
   
-  const themeSelect = document.getElementById('settings-theme');
+  const themeSelect: HTMLElement | null = document.getElementById('settings-theme');
   if (themeSelect) {
-    themeSelect.value = theme;
-    themeSelect.addEventListener('change', async () => {
-      const newTheme = themeSelect.value;
+    (themeSelect as HTMLInputElement).value = theme;
+    themeSelect.addEventListener('change', async (): Promise<void> => {
+      const newTheme: string = (themeSelect as HTMLInputElement).value;
       applyTheme(newTheme);
       await saveThemeSetting(newTheme);
     });
   }
 }
 
-function applyScale(scale) {
-  const factor = parseInt(scale, 10) / 100;
-  document.body.style.zoom = factor;
+function applyScale(scale: string): void {
+  const factor: number = parseInt(scale, 10) / 100;
+  (document.body.style as any).zoom = factor;
 }
 
-async function saveScaleSetting(scale) {
+async function saveScaleSetting(scale: string): Promise<void> {
   const settings = await loadSettings();
   settings.appearance.scale = scale;
   await gpcl.saveSettings(settings);
 }
 
-async function initScale() {
+async function initScale(): Promise<void> {
   const settings = await loadSettings();
-  const scale = settings.appearance?.scale || '100';
+  const scale: string = settings.appearance?.scale || '100';
   applyScale(scale);
   
-  const scaleSelect = document.getElementById('settings-scale');
+  const scaleSelect: HTMLElement | null = document.getElementById('settings-scale');
   if (scaleSelect) {
-    scaleSelect.value = scale;
-    scaleSelect.addEventListener('change', async () => {
-      const newScale = scaleSelect.value;
+    (scaleSelect as HTMLInputElement).value = scale;
+    scaleSelect.addEventListener('change', async (): Promise<void> => {
+      const newScale: string = (scaleSelect as HTMLInputElement).value;
       applyScale(newScale);
       await saveScaleSetting(newScale);
     });
   }
 }
 
-async function saveJavaMirrorSettings(mirror, customUrl) {
+async function saveJavaMirrorSettings(mirror: string, customUrl: string): Promise<void> {
   const settings = await loadSettings();
   settings.download.javaMirror = mirror;
   settings.download.customJavaMirror = customUrl;

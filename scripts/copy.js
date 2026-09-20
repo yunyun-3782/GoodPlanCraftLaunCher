@@ -1,7 +1,7 @@
 /*
- * CaelLab BY-SA Code License
  * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS
-
+ * Licensed under the CaelLab BY-SA Code License, Version 2.0
+ * or any later version. https://www.caellab.com/license/bysa-code-v2.txt
  * Source: https://github.com/yunyun-3782/GoodPlanCraftLauncher
  */
 
@@ -19,7 +19,7 @@ fs.mkdirSync(path.join(dest, 'renderer'), { recursive: true });
 const files = [
   'main.js',
   'preload.js',
-  'gpcl-icon.ico',
+  'icon.ico',
   'package.json'
 ];
 

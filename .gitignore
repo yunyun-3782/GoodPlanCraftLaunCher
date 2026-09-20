@@ -1,6 +1,7 @@
 node_modules/
 dist/
 build/
+release/
 out/
 .env
 .env.local

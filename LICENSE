@@ -1,22 +1,251 @@
 CaelLab BY-SA Code License
+Version 2.0
+https://www.caellab.com/license/bysa-code-v2.txt
 
 Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS
+Licensed under the CaelLab BY-SA Code License, Version 2.0 or any later version.
+Source: https://github.com/yunyun-3782/GoodPlanCraftLauncher
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this work (the "Work"), to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Work, for personal, commercial, or
-non-commercial purposes, subject to the following conditions:
+--------------------------------------------------------------------------
+Version history note
+--------------------------------------------------------------------------
+Releases published before this file was updated (including v1.4.4 and earlier)
+were distributed under Version 1.0 of this License. Recipients who obtained a
+copy at that time keep their rights under Version 1.0. This Work is licensed
+under Version 2.0 or any later version from this point forward.
 
-1. Source Availability: If you distribute the Work, or any derivative work
-   based on the Work, you must make the complete corresponding source code
-   available under the terms of this same license.
+--------------------------------------------------------------------------
 
-2. License Preservation: The above copyright notice and this permission notice
-   shall be included in all copies or substantial portions of the Work.
+TERMS AND CONDITIONS
 
-3. ShareAlike: Any distributed derivative work must be licensed under the
-   CaelLab BY-SA Code License.
+0. DEFINITIONS
 
-THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+"License" means the CaelLab BY-SA Code License, Version 2.0, whose text is
+published at https://www.caellab.com/license/bysa-code-v2.txt, and any later
+version of it as defined in Section 6.
+
+"Licensor" means the individual or legal entity that holds copyright in the
+Work and grants this License.
+
+"You" and "Your" mean an individual or legal entity exercising rights under
+this License.
+
+"Work" means the software, source code, markup, stylesheets, scripts,
+configuration files, assets, and documentation to which the Licensor has
+attached this License.
+
+"Source Code" means the preferred form of the Work for making modifications
+to it, together with the build scripts, dependency manifests, and
+documentation needed to reproduce a corresponding Object Code.
+
+"Object Code" means any form of the Work other than Source Code, including
+compiled, minified, bundled, transpiled, or otherwise generated forms.
+
+"Modified Version" means any work based on or derived from the Work in which
+the Work has been translated, adapted, altered, or extended. A work that
+merely links to, references, or aggregates the Work without modifying it is
+not a Modified Version.
+
+"Distribute" means to reproduce, publish, upload, transfer, or otherwise make
+the Work or a Modified Version available to any third party, including by
+publishing it in a repository, shipping it inside a product, or bundling it
+with a template, theme, or application. Making copies for Your own internal
+use, or running the Work on Your own systems to process data or serve
+requests, is not Distribution for the purposes of this License.
+
+"Contribution" means any work of authorship, including the original Work and
+any modification or addition to it, that is intentionally submitted to the
+Licensor for inclusion in the Work.
+
+"Contributor" means the Licensor and any individual or legal entity on behalf
+of whom a Contribution has been received by the Licensor and incorporated
+into the Work.
+
+1. COPYRIGHT LICENSE
+
+Subject to the terms and conditions of this License, each Contributor grants
+You a worldwide, non-exclusive, royalty-free copyright license to reproduce,
+modify, prepare Modified Versions of, publicly display, publicly perform,
+Distribute, and otherwise use the Work for any purpose, including commercial
+purposes.
+
+The rights granted in this Section do not include the right to sublicense.
+Permission for any third party to use the Work must be granted under this
+License.
+
+2. PATENT LICENSE
+
+Subject to the terms and conditions of this License, each Contributor grants
+You a perpetual, worldwide, non-exclusive, no-charge, royalty-free,
+irrevocable (except as stated in this Section) patent license to make, have
+made, use, offer to sell, sell, import, and otherwise transfer the Work,
+where such license applies only to those patent claims licensable by such
+Contributor that are necessarily infringed by their Contribution(s) alone or
+by combination of their Contribution(s) with the Work to which such
+Contribution(s) was submitted.
+
+If You institute patent litigation against any entity (including a
+cross-claim or counterclaim in a lawsuit) alleging that the Work or a
+Contribution incorporated within the Work constitutes direct or contributory
+patent infringement, then any patent licenses granted to You under this
+License for that Work shall terminate as of the date such litigation is
+filed.
+
+3. CONDITIONS FOR DISTRIBUTION
+
+3.1 Attribution. If You Distribute the Work or a Modified Version, You must:
+
+    (a) retain all copyright, patent, and attribution notices from the Source
+        Code of the Work, including this License;
+    (b) credit the Licensor by name, or by the nickname the Licensor uses,
+        and identify the title of the Work;
+    (c) include a copy of this License;
+    (d) include a prominent statement that You modified the Work, and
+        identify the files or parts You changed, when You have done so; and
+    (e) where the Work is Distributed over a network, link to the URL of this
+        License:
+        https://www.caellab.com/license/bysa-code-v2.txt
+
+3.2 Source Code Availability. Any Distribution of the Work or a Modified
+Version in Object Code or any other non-Source form must be accompanied by
+the complete corresponding Source Code of the same version, made available
+under this License, at no additional charge, through a publicly accessible
+location or by another reasonable means. If the Work is Distributed as part
+of a larger work, the corresponding Source Code of the Work must also be made
+available.
+
+3.3 ShareAlike. A Modified Version may be Distributed only under this License
+or a later version of this License as defined in Section 6. You may not
+impose any further restrictions, additional license terms, or technological
+measures on the Work or a Modified Version that would limit the rights
+granted by this License.
+
+3.4 Third-Party Material. You may combine the Work with material under
+another license, provided that You comply with that license and that
+recipients of the combined work can still exercise the rights granted by this
+License in the Work itself.
+
+4. CONTRIBUTOR REPRESENTATIONS
+
+You represent that You are legally entitled to grant the rights granted in
+this License for each of Your Contributions. If Your employer or educational
+institution has rights to intellectual property that You create, You
+represent that You have received permission to make the Contribution on
+behalf of that party, or that the party has waived such rights.
+
+5. NO TRADEMARK LICENSE
+
+This License does not grant permission to use the trade names, trademarks,
+service marks, or product names of the Licensor, except as required for
+reasonable and customary use in describing the origin of the Work. In
+particular, You may not use the name "CaelLab" to endorse or promote a
+Modified Version without prior written permission.
+
+6. LATER VERSIONS OF THIS LICENSE
+
+CaelLab may publish revised or new versions of this License from time to
+time. Each version is given a distinguishing version number.
+
+A "later version" is a version of this License that meets all of the
+following:
+
+    (a) it is published by CaelLab at the canonical URL of this License,
+        https://www.caellab.com/license/bysa-code-v2.txt, or at a URL that
+        CaelLab names as the successor to that URL;
+    (b) it carries a version number higher than the version You are
+        following; and
+    (c) CaelLab designates it as a final release, and its version number
+        carries no suffix or qualifier such as "-alpha", "-beta", "-rc",
+        "-draft", "-preview", or "-experimental".
+
+Versions that are not final releases, including development, draft, preview,
+experimental, provisional, and modified versions, and versions released by
+anyone other than CaelLab, are not later versions, whatever they are called.
+
+If the Work specifies that a later version of this License applies, such as
+"Version 2.0 or any later version", You may follow the terms of that version
+or the terms of any later version as defined above.
+
+If the Work specifies a version number and does not include "or any later
+version", You may follow only that version.
+
+7. TERMINATION AND REINSTATEMENT
+
+7.1 This License and the rights granted under it terminate automatically if
+You fail to comply with any of its terms and conditions.
+
+7.2 Your rights are automatically reinstated:
+
+    (a) as of the date the violation is cured, if You fully cure the
+        violation within 30 days of becoming aware of it; or
+    (b) permanently, if the Licensor expressly reinstates Your rights in
+        writing.
+
+7.3 When Your rights terminate under Section 7.1, the rights of any recipient
+who received the Work or a Modified Version from You remain in effect,
+provided that recipient remains in full compliance with this License.
+
+7.4 Sections 0, 5, 8, 9, and 11 survive termination of this License.
+
+8. DISCLAIMER OF WARRANTY
+
+UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING, THE LICENSOR AND
+EACH CONTRIBUTOR PROVIDE THE WORK ON AN "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT
+LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT,
+MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE. YOU ARE SOLELY
+RESPONSIBLE FOR DETERMINING THE APPROPRIATENESS OF USING OR REDISTRIBUTING
+THE WORK AND ASSUME ANY RISKS ASSOCIATED WITH YOUR EXERCISE OF PERMISSIONS
+UNDER THIS LICENSE.
+
+9. LIMITATION OF LIABILITY
+
+IN NO EVENT AND UNDER NO LEGAL THEORY, WHETHER IN TORT (INCLUDING
+NEGLIGENCE), CONTRACT, OR OTHERWISE, UNLESS REQUIRED BY APPLICABLE LAW (SUCH
+AS DELIBERATE AND GROSSLY NEGLIGENT ACTS) OR AGREED TO IN WRITING, SHALL ANY
+CONTRIBUTOR BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY DIRECT, INDIRECT,
+SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES OF ANY CHARACTER ARISING AS A
+RESULT OF THIS LICENSE OR OUT OF THE USE OR INABILITY TO USE THE WORK
+(INCLUDING BUT NOT LIMITED TO DAMAGES FOR LOSS OF GOODWILL, WORK STOPPAGE,
+COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL OTHER COMMERCIAL DAMAGES OR
+LOSSES), EVEN IF SUCH CONTRIBUTOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGES.
+
+10. ACCEPTANCE
+
+You are not required to accept this License. However, nothing else grants You
+permission to use, modify, or Distribute the Work. By exercising any of the
+rights granted in Sections 1 or 2, You accept and agree to be bound by the
+terms of this License.
+
+11. SEVERABILITY AND INTERPRETATION
+
+If any provision of this License is held to be unenforceable, that provision
+shall be reformed only to the extent necessary to make it enforceable, and
+the remaining provisions shall remain in full force and effect. Nothing in
+this License is intended to restrict any use of the Work that is permitted by
+applicable law without a license, including fair use and fair dealing. This
+License does not create any obligation on the part of the Licensor to provide
+support, maintenance, updates, or new versions of the Work.
+
+12. HOW TO APPLY THIS LICENSE
+
+To apply this License to Your Work, attach the following notice, replacing
+the bracketed fields with Your own information:
+
+    Copyright (c) [YEAR] [AUTHOR]
+    Licensed under the CaelLab BY-SA Code License, Version 2.0.
+    Source: [URL]
+
+Adding "or any later version" is recommended, so that recipients can follow
+future final versions on their own, without waiting for You to update every
+copy:
+
+    Licensed under the CaelLab BY-SA Code License, Version 2.0 or any later
+    version.
+
+Only final versions published by CaelLab under Section 6 can be followed
+this way. Leave "or any later version" out to keep recipients on this exact
+version.
+
+END OF TERMS AND CONDITIONS
