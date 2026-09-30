@@ -1,18 +1,21 @@
 CaelLab BY-SA Code License
-Version 2.0
-https://www.caellab.com/license/bysa-code-v2.txt
+Version 3
+September 30, 2026
+https://www.caellab.com/license/cbs-v3.txt
 
 Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS
-Licensed under the CaelLab BY-SA Code License, Version 2.0 or any later version.
+Licensed under the CaelLab BY-SA Code License, Version 3 or any later version.
 Source: https://github.com/yunyun-3782/GoodPlanCraftLauncher
 
 --------------------------------------------------------------------------
 Version history note
 --------------------------------------------------------------------------
-Releases published before this file was updated (including v1.4.4 and earlier)
-were distributed under Version 1.0 of this License. Recipients who obtained a
-copy at that time keep their rights under Version 1.0. This Work is licensed
-under Version 2.0 or any later version from this point forward.
+Releases published before this file was first updated to Version 2.0
+(including v1.4.4 and earlier) were distributed under Version 1.0 of this
+License, and releases distributed while this file carried Version 2.0 keep
+their rights under Version 2.0. Recipients who obtained a copy at those
+times keep their rights under the version that applied then. This Work is
+licensed under Version 3 or any later version from this point forward.
 
 --------------------------------------------------------------------------
 
@@ -20,9 +23,15 @@ TERMS AND CONDITIONS
 
 0. DEFINITIONS
 
-"License" means the CaelLab BY-SA Code License, Version 2.0, whose text is
-published at https://www.caellab.com/license/bysa-code-v2.txt, and any later
+"License" means the CaelLab BY-SA Code License, Version 3, whose text is
+published at https://www.caellab.com/license/cbs-v3.txt, and any later
 version of it as defined in Section 6.
+
+"Steward" means CaelLab, which publishes and maintains this License under
+https://www.caellab.com/license/, together with any successor that CaelLab
+names. Publishing this License does not make the Steward the Licensor of any
+Work; the Steward is the Licensor of a Work only if it has itself applied this
+License to that Work.
 
 "Licensor" means the individual or legal entity that holds copyright in the
 Work and grants this License.
@@ -93,6 +102,10 @@ filed.
 
 3. CONDITIONS FOR DISTRIBUTION
 
+This License exists to keep the Work open: anyone may use it, and anyone who
+passes it on must pass it on with the same freedoms. If You Distribute the
+Work or a Modified Version, the following conditions apply.
+
 3.1 Attribution. If You Distribute the Work or a Modified Version, You must:
 
     (a) retain all copyright, patent, and attribution notices from the Source
@@ -104,7 +117,7 @@ filed.
         identify the files or parts You changed, when You have done so; and
     (e) where the Work is Distributed over a network, link to the URL of this
         License:
-        https://www.caellab.com/license/bysa-code-v2.txt
+        https://www.caellab.com/license/cbs-v3.txt
 
 3.2 Source Code Availability. Any Distribution of the Work or a Modified
 Version in Object Code or any other non-Source form must be accompanied by
@@ -114,16 +127,29 @@ location or by another reasonable means. If the Work is Distributed as part
 of a larger work, the corresponding Source Code of the Work must also be made
 available.
 
-3.3 ShareAlike. A Modified Version may be Distributed only under this License
-or a later version of this License as defined in Section 6. You may not
-impose any further restrictions, additional license terms, or technological
-measures on the Work or a Modified Version that would limit the rights
-granted by this License.
+3.3 ShareAlike. The parts of a Modified Version that are the Work, and the
+parts that are changed from the Work, must be licensed under the CaelLab
+BY-SA Code License, Version 3. Where the Work says "or any later version", a
+later version of this License as defined in Section 6 may be used instead. A
+Modified Version may be Distributed only under the version so determined, and
+You must license the entire Modified Version, as a whole, under it to anyone
+who comes into possession of a copy. This License therefore applies to the
+whole of a Modified Version and to all of its parts, however they are
+packaged, and no part of a Modified Version may be licensed on any other
+terms, whether You changed that part or not. You may not impose any further
+restrictions, additional license terms, or technological measures on the Work
+or a Modified Version that would limit the rights granted by this License.
 
 3.4 Third-Party Material. You may combine the Work with material under
 another license, provided that You comply with that license and that
 recipients of the combined work can still exercise the rights granted by this
-License in the Work itself.
+License in the Work itself. Where a combination forms a larger work that is a
+Modified Version, Section 3.3 applies to that larger work as a whole.
+Distributing the Work together with other separate and independent works,
+which are not by their nature extensions of the Work and are not combined
+with it to form a larger work, does not bring those other works under this
+License, provided that the distribution does not limit the rights of its
+recipients beyond what the individual works permit.
 
 4. CONTRIBUTOR REPRESENTATIONS
 
@@ -143,28 +169,28 @@ Modified Version without prior written permission.
 
 6. LATER VERSIONS OF THIS LICENSE
 
-CaelLab may publish revised or new versions of this License from time to
+The Steward may publish revised or new versions of this License from time to
 time. Each version is given a distinguishing version number.
 
 A "later version" is a version of this License that meets all of the
 following:
 
-    (a) it is published by CaelLab at the canonical URL of this License,
-        https://www.caellab.com/license/bysa-code-v2.txt, or at a URL that
-        CaelLab names as the successor to that URL;
+    (a) it is published by the Steward under https://www.caellab.com/license/,
+        or at a URL that the Steward names as the successor to that address;
     (b) it carries a version number higher than the version You are
         following; and
-    (c) CaelLab designates it as a final release, and its version number
+    (c) the Steward designates it as a final release, and its version number
         carries no suffix or qualifier such as "-alpha", "-beta", "-rc",
         "-draft", "-preview", or "-experimental".
 
 Versions that are not final releases, including development, draft, preview,
 experimental, provisional, and modified versions, and versions released by
-anyone other than CaelLab, are not later versions, whatever they are called.
+anyone other than the Steward, are not later versions, whatever they are
+called.
 
 If the Work specifies that a later version of this License applies, such as
-"Version 2.0 or any later version", You may follow the terms of that version
-or the terms of any later version as defined above.
+"Version 3 or any later version", You may follow the terms of that version or
+the terms of any later version as defined above.
 
 If the Work specifies a version number and does not include "or any later
 version", You may follow only that version.
@@ -234,17 +260,17 @@ To apply this License to Your Work, attach the following notice, replacing
 the bracketed fields with Your own information:
 
     Copyright (c) [YEAR] [AUTHOR]
-    Licensed under the CaelLab BY-SA Code License, Version 2.0.
+    Licensed under the CaelLab BY-SA Code License, Version 3.
     Source: [URL]
 
 Adding "or any later version" is recommended, so that recipients can follow
 future final versions on their own, without waiting for You to update every
 copy:
 
-    Licensed under the CaelLab BY-SA Code License, Version 2.0 or any later
+    Licensed under the CaelLab BY-SA Code License, Version 3 or any later
     version.
 
-Only final versions published by CaelLab under Section 6 can be followed
+Only final versions published by the Steward under Section 6 can be followed
 this way. Leave "or any later version" out to keep recipients on this exact
 version.
 

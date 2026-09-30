@@ -1,0 +1,19 @@
+{
+    "Launcher": [
+    { "name":"version" , "key":"1.4.4" }, 
+    { "name" : "versiontitle" , "key":"光影支持！"},
+    { "name":"versionlog" , "key":"新增 OptiFine（光影）支持<br>一键安装，自动处理继承、库文件、tweakClass<br>支持 inheritsFrom 版本继承机制" },
+    { "name":"version" , "key":"1.4.3" }, 
+    { "name" : "versiontitle" , "key":"修复了？我看未必"},
+    { "name":"versionlog" , "key":"Splash上个版本有点问题<br>将设置规范<br>取消启动可以真正杀死进程！" },
+    { "name":"version" , "key":"1.4.2" }, 
+    { "name" : "versiontitle" , "key":"我可以关掉Splash了吗？"},
+    { "name":"versionlog" , "key":"允许关闭Splash（实验）<br>在新人欢迎画面的右上角增加“跳过”<br>优化检查更新<br>修复乱码问题" },
+    { "name":"version" , "key":"1.4.1" }, 
+    { "name" : "versiontitle" , "key":"欢迎！"},
+    { "name":"versionlog" , "key":"新增新人首次启动欢迎动画<br>取消过度反调试，且允许开发者模式" },
+    { "name":"version" , "key":"1.4.0" }, 
+    { "name" : "versiontitle" , "key":"芜湖起飞！"},
+    { "name":"versionlog" , "key":"试图真正支持forge<br>秒开！这是安装版，使用了机器码编译！<br>修复了Bug，感谢论坛<br>大幅优化了流程<br>让更新详情查看详细日志！" } 
+    ]
+}

@@ -1,0 +1,448 @@
+<!--
+ Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS
+ Licensed under the CaelLab BY-SA Code License, Version 3
+ or any later version. https://www.caellab.com/license/cbs-v3.txt
+ Source: https://github.com/yunyun-3782/GoodPlanCraftLauncher
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodPlanCraftLauncher(GPCL1.4.4) - 轻量高效的 Minecraft 启动器 - CaelLabGameTS</title>
+    <meta name="description" content="GoodPlanCraftLauncher 是一款简洁高效的 Minecraft 启动器，支持正版登录、版本管理、Forge/Fabric 模组安装，让你一键进入方块世界。开源免费。">
+    <meta name="keywords" content="GoodPlanCraftLauncher,Minecraft启动器,MC启动器,我的世界启动器,虚舟实验室,像素风,开源">
+    <meta name="author" content="CaelLabGameTS">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="https://gamets.caellab.com" class="logo">
+                <img src="/logo.png" alt="GameTS" style="height:64px;width:auto;display:block;">
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">功能</a></li>
+                <li><a href="#screenshots">截图</a></li>
+                <li><a href="#download">下载</a></li>
+                <li><a href="#opensource">开源</a></li>
+                <li><a href="#history">历史版本</a></li>
+                <li>
+                    <div class="dropdown" id="sourceDropdown">
+                        <button class="dropdown-toggle" onclick="toggleDropdown('sourceDropdown')">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                            源码
+                            <span class="arrow">&#9662;</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <div class="menu-label">GitHub</div>
+                            <a href="https://github.com/yunyun-3782/GoodPlanCraftLaunCher" target="_blank" rel="noopener">
+                                <span style="color:var(--pixel-yellow);">&#9733;</span> GitHub
+                            </a>
+
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <button class="mobile-menu-btn">&#9776;</button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-bg-img" style="background-image:url('/index/gpcl.first.png');background-size:cover;background-position:center;position:absolute;inset:0;z-index:0;opacity:0.25;"></div>
+        <div class="hero-bg-grad" style="position:absolute;inset:0;background:linear-gradient(135deg, rgba(15,15,26,0.85) 0%, rgba(15,15,26,0.6) 40%, rgba(15,15,26,0.95) 100%);z-index:1;"></div>
+        <div class="hero-scanlines" style="z-index:2;"></div>
+        <div class="hero-content" style="z-index:3;">
+            <div class="open-source-tag"><span>&#11088;</span>开源</div>
+            <div class="open-source-tag"><span>&#11088;</span>免费</div>
+            <div class="game-badge">Minecraft 启动器</div>
+            <div class="launcher-icon" style="margin-bottom: 1.5rem;">
+                <img src="./icon.png" alt="GoodPlanCraftLauncher" style="width: 128px; height: 128px; image-rendering: pixelated; border-radius: 8px; box-shadow: 4px 4px 0 rgba(81, 207, 102, 0.3);">
+            </div>
+            <h1>GoodPlanCraftLauncher</h1>
+            <p class="hero-subtitle">轻量 &#183; 高效 &#183; 开源</p>
+            <div class="platform-tags">
+                <span class="platform-tag">Windows</span>
+                <span class="platform-tag">Open Source</span>
+            </div>
+            <div class="version-display">v1.4.4</div>
+            <p class="hero-desc">
+                一款简洁高效的 Minecraft 启动器，支持正版账户登录，
+                自动版本管理，让你秒进方块世界。
+            </p>
+            <div class="hero-actions">
+                <a href="#download" class="hero-btn primary">
+                    &#9660; 立即下载
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="features-section" id="features">
+        <div class="section-header reveal">
+            <div class="section-tag">Features</div>
+            <h2 class="section-title">核心功能</h2>
+            <p class="section-desc">为玩家打造的实用工具</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <span class="feature-icon">&#128273;</span>
+                <h3>正版登录</h3>
+                <p>支持 Microsoft 账户正版登录，安全验证，合规使用。</p>
+            </div>
+            <div class="feature-card reveal">
+                <span class="feature-icon">&#128230;</span>
+                <h3>版本自动管理</h3>
+                <p>一键下载、安装、切换 Minecraft 各版本，自动处理依赖库与资源文件。</p>
+            </div>
+            <div class="feature-card reveal">
+                <span class="feature-icon">&#128640;</span>
+                <h3>极速启动</h3>
+                <p>优化的启动流程与缓存机制，点击即玩，告别漫长等待。</p>
+            </div>
+            <div class="feature-card reveal">
+                <span class="feature-icon">&#9749;</span>
+                <h3>Java 运行时管理</h3>
+                <p>自动检测并补全 Java 运行环境，支持自定义镜像源地址（默认使用清华大学开源镜像站）。</p>
+            </div>
+            <div class="feature-card reveal">
+                <span class="feature-icon">&#127912;</span>
+                <h3>视觉主题适配</h3>
+                <p>完整支持浅色模式与深色模式，自动跟随系统外观偏好设置，提供一致的视觉体验。</p>
+            </div>
+            <div class="feature-card reveal">
+                <span class="feature-icon">&#128260;</span>
+                <h3>自动更新与维护</h3>
+                <p>内置更新检测机制，支持日志自动清理策略（清理周期可配置），保持启动器长期整洁高效。</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="screenshots" id="screenshots">
+        <div class="section-header reveal">
+            <div class="section-tag">Screenshots</div>
+            <h2 class="section-title">界面预览</h2>
+            <p class="section-desc">简洁直观的操作体验</p>
+        </div>
+        <div class="screenshot-grid">
+            <div class="screenshot-card reveal">
+                <img src="./screenshots/main.png" alt="主界面">
+                <p class="screenshot-caption">主界面</p>
+            </div>
+            <div class="screenshot-card reveal">
+                <img src="./screenshots/download.png" alt="下载体验">
+                <p class="screenshot-caption">下载体验</p>
+            </div>
+            <div class="screenshot-card reveal">
+                <img src="./screenshots/versions.png" alt="版本管理">
+                <p class="screenshot-caption">版本管理</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="download" id="download">
+        <div class="section-header reveal">
+            <div class="section-tag">Download</div>
+            <h2 class="section-title">立即下载</h2>
+            <p class="section-desc">选择你的平台，开始方块冒险</p>
+        </div>
+        <div class="reveal">
+            
+            <a href="https://dl.caellab.com/file/games/gpcl/GPCL-1.4.4-Setup.exe" class="download-btn">&#9660; 启动方块世界！</a>
+            <p class="update-info">更新日期：<span>2026-07-11</span> &nbsp;|&nbsp; 支持 Windows</p>
+            
+            <div style="margin-top: 1.5rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                <a href="https://github.com/yunyun-3782/GoodPlanCraftLaunCher" target="_blank" rel="noopener" class="github-link">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                    GitHub
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="section-header reveal">
+            <div class="section-tag">System</div>
+            <h2 class="section-title">系统要求</h2>
+        </div>
+        <div class="info-grid">
+            <div class="info-card reveal">
+                <h3>&#128295; 配置需求</h3>
+                <p><strong>操作系统：</strong>Windows 10 64位（1709+），Windows 11 同样兼容<br>
+                <strong>Java：</strong>启动器自动补全，但建议手动清理系统中冗余或冲突的 Java 文件<br>
+                <strong>存储：</strong>启动器本体至少 90MB 可用空间（不含游戏本体）<br>
+                <strong>内存：</strong>建议 2 GB 以上可用内存</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 开源与贡献 - 放大版 ===== -->
+    <section class="opensource-section" id="opensource">
+        <div class="section-header reveal">
+            <div class="section-tag" style="background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.2);color:var(--pixel-cyan);">Open Source</div>
+            <h2 class="section-title">开源与贡献</h2>
+            <p class="section-desc">GPCL 是 100% 开源项目，源码托管于 GitHub，欢迎大家提交 PR 与 在<a href="https://forum.xmuer.online/" target="_blank">论坛</a>提出建议 共建更好的 Minecraft 启动器。</p>
+        </div>
+        <div class="opensource-grid">
+            <div class="opensource-card reveal">
+                <span class="opensource-icon">&#128220;</span>
+                <h3>开源许可证</h3>
+                <p>采用 CaelLab BY-SA Code License, Version 3（或任何更新版本）授权。可自由使用、修改、分发，修改版必须保持相同开源许可。</p>
+                <a href="https://github.com/yunyun-3782/GoodPlanCraftLaunCher/blob/main/LICENSE" target="_blank">查看许可证全文 &rarr;</a>
+            </div>
+            <div class="opensource-card reveal">
+                <span class="opensource-icon">&#128187;</span>
+                <h3>GitHub 仓库</h3>
+                <p>主源码仓库，Issue、PR 在此管理。欢迎提交 Bug 反馈、功能建议或代码贡献。</p>
+                <a href="https://github.com/yunyun-3782/GoodPlanCraftLaunCher" target="_blank">访问 GitHub &rarr;</a>
+            </div>
+
+        </div>
+        
+        <div class="license-box reveal">
+            <h4>&#128220; License 摘要</h4>
+            <pre>
+Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / CaelLabGameTS
+
+Licensed under the CaelLab BY-SA Code License, Version 3
+or any later version. https://www.caellab.com/license/cbs-v3.txt
+
+You are free to:
+  Share            — copy and redistribute the source code and the compiled
+                     output in any medium or format.
+  Adapt            — remix, transform, and build upon the work.
+  Use commercially — for personal, commercial, or non-commercial purposes.
+  Run it privately — including on your own servers, without publishing
+                     your changes.
+
+Under the following terms:
+  Attribution (BY) — keep the copyright notice, credit the author, link to
+                     this license, and state whether you made changes.
+  ShareAlike (SA)  — derivatives must be distributed under this license or a
+                     later version of it, with no additional restrictions.
+  Source code      — if you distribute the work in built form, the complete
+                     corresponding source must be made available.
+  No trademark     — you may not use the "CaelLab" name to endorse your
+                     version.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.</pre>
+        </div>
+    </section>
+
+
+
+    <section class="version-history" id="history">
+        <div class="section-header reveal">
+            <div class="section-tag">History</div>
+            <h2 class="section-title">历史版本</h2>
+            <p class="section-desc">查看过往版本与更新记录</p>
+        </div>
+        <ul class="version-list">
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">光影支持！ 1.4.4</span>
+                    <span class="version-date">2026年07月11日</span>
+                </div>
+                <div class="version-desc">
+新增 OptiFine（光影）支持<br>一键安装，自动处理继承、库文件、tweakClass<br>支持 inheritsFrom 版本继承机制</div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">修复了 1.4.3</span>
+                    <span class="version-date">2026年06月02日 16:47</span>
+                </div>
+                <div class="version-desc">
+不会出现双滚轮的问题<br>关于页扩展了<br>新增了更多，里面包含百宝箱等<br>                
+</div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">修复了？我看未必 1.4.2</span>
+                    <span class="version-date">2026年06月02日 16:47</span>
+                </div>
+                <div class="version-desc">
+Splash上个版本有点问题<br>将设置规范<br>取消启动可以真正杀死进程！<br>                
+</div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">欢迎！ 1.4.1</span>
+                    <span class="version-date">2026年06月02日</span>
+                </div>
+                <div class="version-desc">
+新增新人首次启动欢迎动画<br>取消过度反调试，且允许开发者模式
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">芜湖起飞！ 1.4.0</span>
+                    <span class="version-date">2026年06月01日</span>
+                </div>
+                <div class="version-desc">
+试图真正支持forge<br>秒开！这是安装版，使用了机器码编译！<br>修复了Bug，感谢论坛<br>大幅优化了流程<br>让更新详情查看详细日志！
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">1.3.3</span>
+                    <span class="version-date">2026年05月28日</span>
+                </div>
+                <div class="version-desc">
+真正能用forge fabric optifine了！<br>
+这个版本是第一个开源的版本啦！
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">1.3.2</span>
+                    <span class="version-date">2026年05月23日 03:30</span>
+                </div>
+                <div class="version-desc">
+新增版本设置详细项目，并默认托管<br>版本设置允许删除游戏版本<br>适配浅色模式更多<br>将恢复默认设置移动至兼容性设置（新增），更新API<br>下拉框美化等多处细节<br>
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">1.3.0-1.3.1</span>
+                    <span class="version-date">2026年05月22日 18:44</span>
+                </div>
+                <div class="version-desc">
+修复下载时无图表的问题（未在安装环境下调用）<br>将自动检查更新的设置踢到了关于<br>下载页面包含完整的Alpha、Beta、快照、正式版，修复了正式版因UI问题无法完整展示的问题。<br>重构启动页，重新设计布局，新增版本管理与优化版本选择，通过最后启动时间排序<br>启动时增加了"你知道吗？"(手动狗头)<br>新增自动清理日志，可在设置中更改时间，同时外观中的缩放也正式可以用了！<br>1.3.1修复了无法显示。
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">1.2.1</span>
+                    <span class="version-date">2026年05月22日 00:*</span>
+                </div>
+                <div class="version-desc">
+将动态库本地化<br>新增防止重复启动/运行<br>去除无用的设置项<br>下载页面的各种东西可以折叠啦
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">1.2.0</span>
+                    <span class="version-date">2026年05月21日 20:32</span>
+                </div>
+                <div class="version-desc">
+新增滚动条<br>新增浅色模式<br>新增启动器整体启动动画，降低启动白屏时间<br>优化视觉体验，将左侧菜单栏移至顶端，同时放大UI（合适的）<br>优化下载页面观感，不会出现层级嵌套多层滚动条的问题，Java运行时增入<br>新增大量设置，将设置整理为游戏、下载、外观、高级、关于<br>
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">1.1.0</span>
+                    <span class="version-date">2026年05月21日</span>
+                </div>
+                <div class="version-desc">
+新增Java自动补全，设置可设置源（谢谢清华！）<br>优化性能<br>下载列表修复大量bug（比如无法取消，取消后有残留）<br>新增启动动画<br>完善日志排错功能<br>
+                </div>
+            </li>
+            <li class="reveal">
+                <div class="version-info">
+                    <span class="version-number">1.0.0</span>
+                    <span class="version-date">2026年05月20日</span>
+                </div>
+                <div class="version-desc">
+                    首个正式版本发布<br>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <a href="https://gamets.caellab.com" class="logo">
+                    <img src="/logo.png" alt="GameTS" style="height:96px;width:auto;display:block;">
+                </a>
+                <p>虚舟实验室旗下独立游戏开发与工具团队。探未来之境，载无界新生。</p>
+            </div>
+            <div class="footer-links">
+                <h4>项目</h4>
+                <ul>
+                    <li><a href="/gpcl/">GoodPlanCraftLauncher</a></li>
+                    <li><a href="/areyouok/">Are You OK?</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>社区</h4>
+                <ul>
+                    <li><a href="https://forum.xmuer.online" target="_blank">官方论坛</a></li>
+                    <li><a href="mailto:gamets@caellab.com">邮箱：gamets@caellab.com</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>开源</h4>
+                <ul>
+                    <li><a href="https://github.com/yunyun-3782/GoodPlanCraftLaunCher" target="_blank" rel="noopener">GitHub</a></li>
+
+                    <li><a href="https://www.caellab.com/license/cbs-v3.txt" target="_blank">许可证</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; GameTS by <a href="https://www.caellab.com/" target="_blank" class="footer-inline-link">CaelLab</a>, <a href="https://www.caellab.com/" target="_blank" class="footer-inline-link">虚舟实验室</a>. All rights reserved.</p>
+            <p><a href="#" class="footer-inline-link">GoodPlanCraftLauncher</a> 为第三方开源工具，与 Mojang Studios、<a href="https://www.microsoft.com/" target="_blank" rel="noopener" class="footer-inline-link">Microsoft</a>、<a href="https://www.xbox.com/" target="_blank" rel="noopener" class="footer-inline-link">Xbox</a> 无任何官方关联。<a href="https://www.minecraft.net/" target="_blank" rel="noopener" class="footer-inline-link">Minecraft</a> 为 Mojang Studios 注册商标。使用本启动器需持有有效的 Minecraft 正版授权。</p>
+            <p>开源许可证：<a href="https://www.caellab.com/license/cbs-v3.txt" target="_blank" class="footer-inline-link">CaelLab BY-SA Code License v3</a> | Open Source on <a href="https://github.com/yunyun-3782/GoodPlanCraftLaunCher" target="_blank" rel="noopener" class="footer-inline-link">GitHub</a></p>
+        </div>
+    </footer>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealElements.forEach(function(el) {
+            revealObserver.observe(el);
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            const isActive = dropdown.classList.contains('active');
+            document.querySelectorAll('.dropdown').forEach(function(d) {
+                d.classList.remove('active');
+            });
+            if (!isActive) {
+                dropdown.classList.add('active');
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(function(d) {
+                    d.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

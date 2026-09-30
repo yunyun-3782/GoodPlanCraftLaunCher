@@ -3,7 +3,7 @@
 > 轻量 · 高效 · 开源 —— 一款专为 Windows 平台设计的 Minecraft 启动器
 
 [![Version](https://img.shields.io/badge/version-1.4.4-blue.svg)](https://github.com/CaelLab/GoodPlanCraftLauncher/releases)
-[![License](https://img.shields.io/badge/license-CaelLab%20BY--SA%202.0-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-CaelLab%20BY--SA%203-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2B-lightgrey.svg)](https://www.microsoft.com/windows)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)](https://github.com/CaelLab/GoodPlanCraftLauncher)
 
@@ -94,7 +94,7 @@ GPCL 的主要界面分为以下几个核心区域：
 
 ## 开源许可证
 
-本项目采用 **CaelLab BY-SA Code License, Version 2.0**（或任何更新版本）进行授权。该许可证是一款面向代码、网站与数字作品的简短 Copyleft 许可，强调署名（BY）与衍生作品的持续开源（ShareAlike）。其核心条款如下：
+本项目采用 **CaelLab BY-SA Code License, Version 3**（或任何更新版本）进行授权。该许可证是一款面向代码、网站与数字作品的简短 Copyleft 许可，强调署名（BY）与衍生作品的持续开源（ShareAlike）。其核心条款如下：
 
 - **自由使用**：允许复制、修改、分发本软件，无论用于个人、商业还是非商业目的
 - **署名（BY）**：分发时必须保留原始版权声明与许可全文，标注作者与作品名称；通过网络分发时还需链接许可原文 URL
@@ -103,9 +103,9 @@ GPCL 的主要界面分为以下几个核心区域：
 - **专利授权**：贡献者授予使用者专利许可，并附带专利报复条款
 - **商标保留**：不得使用 "CaelLab" 名称为本项目的修改版背书或推广
 
-查看 [完整许可证全文](LICENSE) 以了解详细条款。许可证的权威原文发布于 [caellab.com/license/bysa-code-v2.txt](https://www.caellab.com/license/bysa-code-v2.txt)。
+查看 [完整许可证全文](LICENSE) 以了解详细条款。许可证的权威原文发布于 [caellab.com/license/cbs-v3.txt](https://www.caellab.com/license/cbs-v3.txt)。
 
-> **版本说明**：本项目在 v1.4.4 及更早版本发布时采用的是该许可证的 Version 1.0。按 Version 1.0 获得副本的使用者，其权利仍适用 Version 1.0；自此之后发布的版本适用 Version 2.0 或任何更新版本。
+> **版本说明**：本项目在 v1.4.4 及更早版本发布时采用的是该许可证的 Version 1.0，此后至本次更新前采用 Version 2.0。按当时版本获得副本的使用者，其权利仍适用获得时对应的版本；自此之后发布的版本适用 Version 3 或任何更新版本。
 
 ---
 
@@ -157,7 +157,7 @@ A：在启动器登录界面或设置面板中，可以自由切换登录模式�
 | GitCaelLab 镜像 | [https://git.caellab.com/GoodPlanCraftLauncher](https://git.caellab.com/GoodPlanCraftLauncher) |
 | 问题与建议反馈 | [XM UER论坛](https://forum.xmuer.online/) |
 | 许可证文本 | [LICENSE](LICENSE) |
-| 许可证原文（CaelLab 官方） | [https://www.caellab.com/license/bysa-code-v2.txt](https://www.caellab.com/license/bysa-code-v2.txt) |
+| 许可证原文（CaelLab 官方） | [https://www.caellab.com/license/cbs-v3.txt](https://www.caellab.com/license/cbs-v3.txt) |
 
 ---
 
